@@ -1,17 +1,17 @@
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using tocaaqui_backend.Domain.Users.Interfaces;
-using tocaaqui_backend.Infrastructure.Repositories;
 using tocaaqui_backend.Infrastructure.Auth;
+using tocaaqui_backend.Infrastructure.Persistence;
+using tocaaqui_backend.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ----------------------------------------------
-// 1. Registramos servicios de la aplicación
-// ----------------------------------------------
+// -------------------- Servicios --------------------
 builder.Services.AddControllers();
 
-// Swagger / OpenAPI
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -21,39 +21,34 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1",
         Description = "Endpoints de autenticación (login, register, logout)"
     });
-
-    // Si luego usas JWT real, aquí se agregan esquemas de seguridad.
 });
 
-// MediatR (CQRS)
-builder.Services.AddMediatR(typeof(Program)); // escanea este ensamblado
+// MediatR
+builder.Services.AddMediatR(typeof(Program));
 
-// Dependencias de dominio / infraestructura
-builder.Services.AddSingleton<IUserRepository, InMemoryUserRepository>();
+// DbContext: MySQL
+var conn = builder.Configuration.GetConnectionString("MySql");
+builder.Services.AddDbContext<AppDbContext>(opt =>
+    opt.UseMySql(conn, ServerVersion.AutoDetect(conn)));
+
+// Repositorio y JWT
+builder.Services.AddScoped<IUserRepository, EfUserRepository>(); // EF Core
 builder.Services.AddSingleton<IJwtGenerator, FakeJwtGenerator>();
 
-// ----------------------------------------------
-// 2. Construimos la aplicación
-// ----------------------------------------------
+// -------------------- App --------------------
 var app = builder.Build();
 
-// ----------------------------------------------
-// 3. Pipeline HTTP
-// ----------------------------------------------
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
+    app.UseSwaggerUI(ui =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "TocaAquí Auth v1");
-        c.RoutePrefix = string.Empty; // Swagger en la raíz /
+        ui.SwaggerEndpoint("/swagger/v1/swagger.json", "TocaAquí Auth v1");
+        ui.RoutePrefix = string.Empty;
     });
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
