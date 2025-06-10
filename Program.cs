@@ -1,20 +1,31 @@
-using System.Text;
-using MediatR;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using tocaaqui_backend.Domain.Users.Interfaces;
-using tocaaqui_backend.Infrastructure.Auth;
-using tocaaqui_backend.Infrastructure.Persistence;
-using tocaaqui_backend.Infrastructure.Repositories;
+using tocaaqui_backend.Shared.Infrastructure.Persistence.EFC.Configuration;
+using tocaaqui_backend.Events.Domain.Repositories;
+using tocaaqui_backend.Events.Infrastructure.Repositories;
+using tocaaqui_backend.Events.Domain.Services;
+using tocaaqui_backend.Events.Application.Internal.CommandServices;
+using tocaaqui_backend.Events.Application.Internal.QueryServices;
+using tocaaqui_backend.Shared.Domain.Repositories;
+using tocaaqui_backend.Shared.Infrastructure.Persistence.EFC.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // --------------------------------------------------
-// 1. Servicios de la aplicación
+// 1. Servicios de la aplicaciÃ³n
 // --------------------------------------------------
 builder.Services.AddControllers();
+
+// ------------ CORS para frontend ------------------
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 // ------------ Swagger + JWT bearer ---------------
 builder.Services.AddEndpointsApiExplorer();
@@ -22,90 +33,79 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "TocaAquí – Auth API",
+        Title = "TocaAquÃ­ Events API",
         Version = "v1",
-        Description = "Endpoints de autenticación (login, register, logout)"
+        Description = "API para eventos musicales TocaAquÃ­"
     });
 
-    // Seguridad JWT en Swagger
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Description = "JWT en formato: Bearer {token}",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer"
-    });
-
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id   = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
+    // Especificar que usamos OpenAPI 3.0
+    c.EnableAnnotations();
 });
 
-// ------------- MediatR ----------------------------
-builder.Services.AddMediatR(typeof(Program));
-
 // ------------- EF Core MySQL ----------------------
-var conn = builder.Configuration.GetConnectionString("MySql");
-builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseMySql(conn, ServerVersion.AutoDetect(conn)));
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// ------------- JWT settings -----------------------
-var jwtSection = builder.Configuration.GetSection("Jwt");
-var secretKey = Encoding.UTF8.GetBytes(jwtSection["Secret"]!);
+// Verify Database Connection String
+if (connectionString is null)
+    throw new Exception("Connection string is null");
 
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(opt =>
-    {
-        opt.TokenValidationParameters = new TokenValidationParameters
+// Configure Database Context and Logging Levels
+if (builder.Environment.IsDevelopment())
+    builder.Services.AddDbContext<AppDbContext>(
+        options =>
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSection["Issuer"],
-            ValidAudience = jwtSection["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(secretKey)
-        };
-    });
-
-builder.Services.AddAuthorization();
+            options.UseMySQL(connectionString)
+                .LogTo(Console.WriteLine, LogLevel.Information)
+                .EnableSensitiveDataLogging()
+                .EnableDetailedErrors();
+        }
+    );
+else if (builder.Environment.IsProduction())
+    builder.Services.AddDbContext<AppDbContext>(
+        options =>
+        {
+            options.UseMySQL(connectionString)
+                .LogTo(Console.WriteLine, LogLevel.Error)
+                .EnableDetailedErrors();
+        }
+    );
 
 // ------------- Dependencias de dominio ------------
-builder.Services.AddScoped<IUserRepository, EfUserRepository>(); // EF Core repo
-builder.Services.AddSingleton<IJwtGenerator, JwtGenerator>();    // JWT real
+// Shared
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// Events
+builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddScoped<IEventApplicantRepository, EventApplicantRepository>();
+builder.Services.AddScoped<IInvitationRepository, InvitationRepository>();
+builder.Services.AddScoped<IEventCommandService, EventCommandService>();
+builder.Services.AddScoped<IEventQueryService, EventQueryService>();
+builder.Services.AddScoped<IEventApplicantCommandService, EventApplicantCommandService>();
+builder.Services.AddScoped<IInvitationCommandService, InvitationCommandService>();
 
 // --------------------------------------------------
 // 2. Construir app
 // --------------------------------------------------
 var app = builder.Build();
 
-// Swagger visible en dev
-if (app.Environment.IsDevelopment())
+// ------------- Crear base de datos automÃ¡ticamente ---------------
+using (var scope = app.Services.CreateScope())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(ui =>
-    {
-        ui.SwaggerEndpoint("/swagger/v1/swagger.json", "TocaAquí Auth v1");
-        ui.RoutePrefix = string.Empty;
-    });
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<AppDbContext>();
+    context.Database.EnsureCreated();
 }
 
+// Swagger habilitado en todos los ambientes
+app.UseSwagger();
+app.UseSwaggerUI(ui =>
+{
+    ui.SwaggerEndpoint("/swagger/v1/swagger.json", "TocaAquÃ­ Events API v1");
+    ui.RoutePrefix = string.Empty;
+});
+
 app.UseHttpsRedirection();
-app.UseAuthentication();   // <-- habilita JWT
-app.UseAuthorization();
+app.UseCors("AllowAll");
 
 app.MapControllers();
 app.Run();
