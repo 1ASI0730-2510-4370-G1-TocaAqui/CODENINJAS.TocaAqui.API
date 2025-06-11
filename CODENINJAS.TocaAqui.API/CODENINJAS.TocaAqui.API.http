@@ -1,6 +1,6 @@
-@tocaaqui_backend_HostAddress = http://localhost:5239
+@CODENINJAS.TocaAqui.API_HostAddress = http://localhost:5239
 
-GET {{tocaaqui_backend_HostAddress}}/weatherforecast/
+GET {{CODENINJAS.TocaAqui.API_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ### 
