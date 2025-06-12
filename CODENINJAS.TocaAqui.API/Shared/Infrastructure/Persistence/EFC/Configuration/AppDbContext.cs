@@ -1,4 +1,5 @@
 using CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregates;
+using CODENINJAS.TocaAqui.API.IAM.Domain.Model.Aggregates;                // + IAM
 using CODENINJAS.TocaAqui.API.Shared.Infrastructure.Persistence.EFC.Configuration.Extensions;
 using EntityFrameworkCore.CreatedUpdatedDate.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -50,5 +51,20 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
         builder.Entity<Invitation>().Property(i => i.Id).IsRequired().ValueGeneratedOnAdd();
         builder.Entity<Invitation>().Property(i => i.Status).IsRequired().HasMaxLength(50);
         builder.Entity<Invitation>().Property(i => i.Message).HasMaxLength(1000);
+
+        // ---------- IAM – USER ---------------------------------------------
+        builder.Entity<User>().HasKey(u => u.Id);
+        builder.Entity<User>().Property(u => u.Id)          .IsRequired().ValueGeneratedOnAdd();
+        builder.Entity<User>().Property(u => u.Name)        .IsRequired().HasMaxLength(200);
+        builder.Entity<User>().Property(u => u.Username)    .IsRequired().HasMaxLength(320); // Email
+        builder.Entity<User>().Property(u => u.PasswordHash).IsRequired();
+        builder.Entity<User>().Property(u => u.Role)        .IsRequired().HasMaxLength(50);
+        builder.Entity<User>().Property(u => u.Genre)       .HasMaxLength(100);
+        builder.Entity<User>().Property(u => u.Type)        .HasMaxLength(50);
+        builder.Entity<User>().Property(u => u.Description) .HasMaxLength(1000);
+        builder.Entity<User>().Property(u => u.ImageUrl)    .HasMaxLength(500);
+
+        // ---------- snake_case (opcional) ----------------------------------
+        builder.UseSnakeCaseNamingConvention();
     }
-} 
+}
