@@ -1,4 +1,5 @@
 using CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregates;
+using CODENINJAS.TocaAqui.API.Profile.Domain.Model.Aggregates;
 using CODENINJAS.TocaAqui.API.Shared.Infrastructure.Persistence.EFC.Configuration.Extensions;
 using EntityFrameworkCore.CreatedUpdatedDate.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -50,5 +51,43 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
         builder.Entity<Invitation>().Property(i => i.Id).IsRequired().ValueGeneratedOnAdd();
         builder.Entity<Invitation>().Property(i => i.Status).IsRequired().HasMaxLength(50);
         builder.Entity<Invitation>().Property(i => i.Message).HasMaxLength(1000);
+        
+        builder.Entity<Profile.Domain.Model.Aggregates.Profile>(b =>
+        {
+            b.ToTable("user");
+            b.HasKey(p => p.Id);
+            b.Property(p => p.Id)
+                .HasConversion(
+                    id => id.Value,
+                    value => new CODENINJAS.TocaAqui.API.Profile.Domain.Model.ValueObjects.ProfileId(value))
+                .IsRequired()
+                .ValueGeneratedOnAdd();
+
+            b.Property(p => p.Name)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            b.Property(p => p.Email)
+                .HasConversion(
+                    email => email.Value,
+                    value => new CODENINJAS.TocaAqui.API.Profile.Domain.Model.ValueObjects.Email(value))
+                .IsRequired()
+                .HasMaxLength(320);
+
+            b.Property(p => p.Genre)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            b.Property(p => p.Type)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            b.Property(p => p.Description)
+                .IsRequired()
+                .HasMaxLength(1000);
+
+            b.Property(p => p.ProfileImagePath)
+                .HasMaxLength(500);
+        });
     }
 } 
