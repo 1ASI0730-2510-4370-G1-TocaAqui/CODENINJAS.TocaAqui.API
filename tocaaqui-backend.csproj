@@ -8,6 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MediatR" Version="12.5.0" />
+    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0" />
@@ -15,19 +17,6 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.4.0" />
     <PackageReference Include="EntityFrameworkCore.CreatedUpdatedDate" Version="8.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Profile\Application\Internal\CommandServices\" />
-    <Folder Include="Profile\Application\Internal\QueryServices\" />
-    <Folder Include="Profile\Domain\Model\Aggregates\" />
-    <Folder Include="Profile\Domain\Model\Commands\" />
-    <Folder Include="Profile\Domain\Model\Queries\" />
-    <Folder Include="Profile\Domain\Repositories\" />
-    <Folder Include="Profile\Domain\Services\" />
-    <Folder Include="Profile\Infrastructure\Repositories\" />
-    <Folder Include="Profile\Interfaces\REST\Resources\" />
-    <Folder Include="Profile\Interfaces\REST\Transform\" />
   </ItemGroup>
 
 </Project>
