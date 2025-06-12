@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace CODENINJAS.TocaAqui.API.IAM.Interfaces.Rest;
 
 [ApiController]
-[Route("api/v1/[controller]")]              // => /api/v1/users (kebab-case conv.)
+[Route("api/[controller]")]              // => /api/v1/users (kebab-case conv.)
 public class UsersController : ControllerBase
 {
     private readonly IUserCommandService _commandService;
@@ -27,7 +27,13 @@ public class UsersController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> SignUp([FromBody] RegisterUserResource body)
     {
-        var command = new SignUpCommand(body.Email, body.Password);
+        var command = new SignUpCommand(
+            body.Name,
+            body.Email,
+            body.Password,
+            body.Role,          // ← viene en el DTO
+            null, null, null,   // genre, type, description (opcional)
+            body.ImageUrl);
         await _commandService.Handle(command);
         return Ok(new { message = "User created successfully" });
     }
@@ -39,7 +45,7 @@ public class UsersController : ControllerBase
     {
         var command           = new SignInCommand(body.Email, body.Password);
         var (user, token)     = await _commandService.Handle(command);
-        var userResource      = new UserResource(user.Id, user.Username);
+        var userResource      = new UserResource(user.Id, user.Email, user.Name, user.Role, user.ImageUrl);
         return Ok(new { user = userResource, token });
     }
 
@@ -49,7 +55,8 @@ public class UsersController : ControllerBase
     public async Task<IEnumerable<UserResource>> GetAll()
     {
         var users = await _queryService.Handle(new GetAllUsersQuery());
-        return users.Select(u => new UserResource(u.Id, u.Username));
+        return users.Select(u => new UserResource(u.Id, u.Email, u.Name, u.Role, u.ImageUrl));
+
     }
 
     // ----------- GET BY ID (requiere token) --------------------------------
@@ -60,6 +67,6 @@ public class UsersController : ControllerBase
         var user = await _queryService.Handle(new GetUserByIdQuery(id));
         return user is null
             ? NotFound()
-            : Ok(new UserResource(user.Id, user.Username));
+            : Ok(new UserResource(user.Id, user.Email, user.Name, user.Role, user.ImageUrl));
     }
 }

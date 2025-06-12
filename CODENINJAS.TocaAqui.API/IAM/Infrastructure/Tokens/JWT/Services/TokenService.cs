@@ -54,7 +54,7 @@ public class TokenService(IOptions<TokenSettings> options) : ITokenService
 
         if (!result.IsValid || result.SecurityToken is not JsonWebToken jwt)
             return null;
-
-        return int.Parse(jwt.GetClaim(ClaimTypes.Sid)!);
+            
+        return int.Parse(jwt.Claims.First(c => c.Type == ClaimTypes.Sid).Value);
     }
 }

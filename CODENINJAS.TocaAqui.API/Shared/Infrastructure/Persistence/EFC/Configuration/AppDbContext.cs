@@ -56,13 +56,14 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
         builder.Entity<User>().HasKey(u => u.Id);
         builder.Entity<User>().Property(u => u.Id)          .IsRequired().ValueGeneratedOnAdd();
         builder.Entity<User>().Property(u => u.Name)        .IsRequired().HasMaxLength(200);
-        builder.Entity<User>().Property(u => u.Username)    .IsRequired().HasMaxLength(320); // Email
+        builder.Entity<User>().Property(u => u.Email)       .IsRequired().HasMaxLength(320);
         builder.Entity<User>().Property(u => u.PasswordHash).IsRequired();
         builder.Entity<User>().Property(u => u.Role)        .IsRequired().HasMaxLength(50);
         builder.Entity<User>().Property(u => u.Genre)       .HasMaxLength(100);
         builder.Entity<User>().Property(u => u.Type)        .HasMaxLength(50);
         builder.Entity<User>().Property(u => u.Description) .HasMaxLength(1000);
         builder.Entity<User>().Property(u => u.ImageUrl)    .HasMaxLength(500);
+
 
         // ---------- snake_case (opcional) ----------------------------------
         builder.UseSnakeCaseNamingConvention();

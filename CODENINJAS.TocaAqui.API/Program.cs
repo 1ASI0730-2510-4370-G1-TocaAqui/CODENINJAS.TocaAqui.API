@@ -3,6 +3,7 @@ using Microsoft.OpenApi.Models;
 using CODENINJAS.TocaAqui.API.Shared.Infrastructure.Persistence.EFC.Configuration;
 using CODENINJAS.TocaAqui.API.Shared.Domain.Repositories;
 using CODENINJAS.TocaAqui.API.Shared.Infrastructure.Persistence.EFC.Repositories;
+using CODENINJAS.TocaAqui.API.IAM.Application.Internal.OutboundServices;
 
 using CODENINJAS.TocaAqui.API.Events.Domain.Repositories;
 using CODENINJAS.TocaAqui.API.Events.Infrastructure.Repositories;
@@ -58,7 +59,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // ------------- EF Core MySQL ----------------------
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                        ?? throw new Exception("Connection string is null");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -87,8 +88,8 @@ builder.Services.AddScoped<IInvitationCommandService, InvitationCommandService>(
 builder.Services.Configure<TokenSettings>(
     builder.Configuration.GetSection("TokenSettings"));
 
-builder.Services.AddScoped<IHashingService,          HashingService>();
-builder.Services.AddScoped<ITokenService,            TokenService>();
+builder.Services.AddScoped<IHashingService, HashingService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUserRepository,          UserRepository>();
 builder.Services.AddScoped<IUserCommandService,      UserCommandService>();
 builder.Services.AddScoped<IUserQueryService,        UserQueryService>();
