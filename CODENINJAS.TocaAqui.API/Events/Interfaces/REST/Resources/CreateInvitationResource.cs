@@ -5,7 +5,14 @@ namespace CODENINJAS.TocaAqui.API.Events.Interfaces.REST.Resources;
 /// </summary>
 public record CreateInvitationResource(
     int EventId,
-    int ArtistId,
+    string EventName,
+    DateTime EventDate,
+    string EventLocation,
+    string EventImageUrl,
     int PromoterId,
-    string Message
+    string PromoterName,
+    int ArtistId,
+    string ArtistName,
+    string Message,
+    string Status = "pending"
 ); 

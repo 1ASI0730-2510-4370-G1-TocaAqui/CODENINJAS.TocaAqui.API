@@ -1,6 +1,6 @@
 using CODENINJAS.TocaAqui.API.Events.Domain.Model.Commands;
 
-namespace CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregates;
+namespace CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregate;
 
 /// <summary>
 ///     EventApplicant Aggregate - Represents the relationship between a user and an event application

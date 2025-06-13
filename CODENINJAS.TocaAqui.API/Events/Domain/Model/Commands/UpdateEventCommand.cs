@@ -1,7 +1,7 @@
 namespace CODENINJAS.TocaAqui.API.Events.Domain.Model.Commands;
 
 /// <summary>
-///     Command to update an existing musical event
+/// Command to update an existing event
 /// </summary>
 /// <param name="Name">The name of the event</param>
 /// <param name="Date">The date when the event will take place</param>
@@ -13,7 +13,6 @@ namespace CODENINJAS.TocaAqui.API.Events.Domain.Model.Commands;
 /// <param name="Genre">The musical genre of the event</param>
 /// <param name="Equipment">The equipment provided for the event</param>
 /// <param name="Capacity">The maximum capacity of the venue</param>
-/// <param name="AvailableTickets">The number of available tickets</param>
 public record UpdateEventCommand(
     string Name,
     DateTime Date,
@@ -24,6 +23,5 @@ public record UpdateEventCommand(
     decimal Payment,
     string Genre,
     string Equipment,
-    int Capacity,
-    int AvailableTickets
+    int Capacity
 ); 

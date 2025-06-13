@@ -1,4 +1,4 @@
-using CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregates;
+using CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregate;
 using CODENINJAS.TocaAqui.API.Events.Domain.Model.Commands;
 using CODENINJAS.TocaAqui.API.Events.Domain.Repositories;
 using CODENINJAS.TocaAqui.API.Events.Domain.Services;
@@ -7,7 +7,7 @@ using CODENINJAS.TocaAqui.API.Shared.Domain.Repositories;
 namespace CODENINJAS.TocaAqui.API.Events.Application.Internal.CommandServices;
 
 /// <summary>
-///     Event command service implementation
+///     Service to handle event commands
 /// </summary>
 public class EventCommandService : IEventCommandService
 {
@@ -23,54 +23,32 @@ public class EventCommandService : IEventCommandService
     public async Task<Event?> Handle(CreateEventCommand command)
     {
         var eventEntity = new Event(command);
-        
-        try
-        {
-            await _eventRepository.AddAsync(eventEntity);
-            await _unitOfWork.CompleteAsync();
-            return eventEntity;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error creating event: {ex.Message}");
-            return null;
-        }
+        await _eventRepository.AddAsync(eventEntity);
+        await _unitOfWork.CompleteAsync();
+        return eventEntity;
     }
 
     public async Task<Event?> Handle(UpdateEventCommand command, int eventId)
     {
         var existingEvent = await _eventRepository.FindByIdAsync(eventId);
-        if (existingEvent == null) return null;
-
-        try
-        {
-            existingEvent.UpdateEvent(command);
-            _eventRepository.Update(existingEvent);
-            await _unitOfWork.CompleteAsync();
-            return existingEvent;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error updating event: {ex.Message}");
+        if (existingEvent == null)
             return null;
-        }
+
+        existingEvent.UpdateEvent(command);
+        _eventRepository.Update(existingEvent);
+        await _unitOfWork.CompleteAsync();
+        return existingEvent;
     }
 
-    public async Task<bool> Handle(int eventId)
+    public async Task<bool> Handle(int id)
     {
-        var existingEvent = await _eventRepository.FindByIdAsync(eventId);
-        if (existingEvent == null) return false;
-
-        try
-        {
-            _eventRepository.Remove(existingEvent);
-            await _unitOfWork.CompleteAsync();
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error deleting event: {ex.Message}");
+        var eventEntity = await _eventRepository.FindByIdAsync(id);
+        
+        if (eventEntity is null) 
             return false;
-        }
+        
+        _eventRepository.Remove(eventEntity);
+        await _unitOfWork.CompleteAsync();
+        return true;
     }
 } 

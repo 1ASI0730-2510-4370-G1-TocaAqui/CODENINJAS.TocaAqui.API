@@ -1,6 +1,6 @@
 using CODENINJAS.TocaAqui.API.Events.Domain.Model.Commands;
 
-namespace CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregates;
+namespace CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregate;
 
 /// <summary>
 ///     Contract Aggregate - Represents a contract between a promoter and musician for an event

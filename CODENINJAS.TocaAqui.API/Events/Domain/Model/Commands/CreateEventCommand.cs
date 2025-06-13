@@ -1,7 +1,7 @@
 namespace CODENINJAS.TocaAqui.API.Events.Domain.Model.Commands;
 
 /// <summary>
-///     Command to create a new musical event
+/// Command to create a new event
 /// </summary>
 /// <param name="PromoterId">The ID of the promoter creating the event</param>
 /// <param name="Name">The name of the event</param>
@@ -10,11 +10,9 @@ namespace CODENINJAS.TocaAqui.API.Events.Domain.Model.Commands;
 /// <param name="PublishDate">The date when the event was published</param>
 /// <param name="Location">The location where the event will take place</param>
 /// <param name="ImageUrl">The URL of the event image</param>
-/// <param name="Status">The current status of the event</param>
 /// <param name="SoundcheckDate">The date for soundcheck</param>
 /// <param name="SoundcheckTime">The time for soundcheck</param>
 /// <param name="Capacity">The maximum capacity of the venue</param>
-/// <param name="AvailableTickets">The number of available tickets</param>
 /// <param name="AdminName">The name of the event administrator</param>
 /// <param name="AdminId">The ID of the event administrator</param>
 /// <param name="AdminContact">The contact information of the event administrator</param>
@@ -25,18 +23,16 @@ namespace CODENINJAS.TocaAqui.API.Events.Domain.Model.Commands;
 /// <param name="Genre">The musical genre of the event</param>
 /// <param name="Equipment">The equipment provided for the event</param>
 public record CreateEventCommand(
-    int? PromoterId,
+    int PromoterId,
     string Name,
     DateTime Date,
     TimeSpan Time,
     DateTime PublishDate,
     string Location,
     string ImageUrl,
-    string Status,
     DateTime? SoundcheckDate,
     TimeSpan? SoundcheckTime,
     int Capacity,
-    int AvailableTickets,
     string AdminName,
     int? AdminId,
     string AdminContact,

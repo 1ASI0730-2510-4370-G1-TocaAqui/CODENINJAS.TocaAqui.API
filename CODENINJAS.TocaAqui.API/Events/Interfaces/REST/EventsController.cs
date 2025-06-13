@@ -5,6 +5,7 @@ using CODENINJAS.TocaAqui.API.Events.Domain.Model.Queries;
 using CODENINJAS.TocaAqui.API.Events.Domain.Services;
 using CODENINJAS.TocaAqui.API.Events.Interfaces.REST.Resources;
 using CODENINJAS.TocaAqui.API.Events.Interfaces.REST.Transform;
+using CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregate;
 
 namespace CODENINJAS.TocaAqui.API.Events.Interfaces.REST;
 
@@ -38,7 +39,7 @@ public class EventsController : ControllerBase
         try
         {
             var events = await _eventQueryService.GetAllEventsAsync();
-            var resources = events.Select(EventResourceFromEntityAssembler.ToResourceFromEntity);
+            var resources = events.Select(e => EventResourceFromEntityAssembler.ToResourceFromEntity(e));
             return Ok(resources);
         }
         catch (Exception ex)
@@ -69,7 +70,7 @@ public class EventsController : ControllerBase
         if (eventEntity is null) 
             return NotFound();
         
-        var resource = EventResourceFromEntityAssembler.ToResourceFromEntity(eventEntity);
+        var resource = EventResourceFromEntityAssembler.ToResourceFromEntity((Event)eventEntity);
         return Ok(resource);
     }
 
@@ -88,7 +89,7 @@ public class EventsController : ControllerBase
     {
         var getEventsByPromoterIdQuery = new GetEventsByPromoterIdQuery(promoterId);
         var events = await _eventQueryService.Handle(getEventsByPromoterIdQuery);
-        var resources = events.Select(EventResourceFromEntityAssembler.ToResourceFromEntity);
+        var resources = events.Select(e => EventResourceFromEntityAssembler.ToResourceFromEntity(e));
         return Ok(resources);
     }
 
@@ -112,7 +113,7 @@ public class EventsController : ControllerBase
         if (eventEntity is null) 
             return BadRequest();
         
-        var eventResource = EventResourceFromEntityAssembler.ToResourceFromEntity(eventEntity);
+        var eventResource = EventResourceFromEntityAssembler.ToResourceFromEntity((Event)eventEntity);
         return CreatedAtAction(nameof(GetEventById), new { id = eventEntity.Id }, eventResource);
     }
 

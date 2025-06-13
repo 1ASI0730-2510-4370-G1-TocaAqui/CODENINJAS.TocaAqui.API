@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregates;
+using CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregate;
 using CODENINJAS.TocaAqui.API.Events.Domain.Repositories;
 using CODENINJAS.TocaAqui.API.Shared.Infrastructure.Persistence.EFC.Configuration;
 using CODENINJAS.TocaAqui.API.Shared.Infrastructure.Persistence.EFC.Repositories;

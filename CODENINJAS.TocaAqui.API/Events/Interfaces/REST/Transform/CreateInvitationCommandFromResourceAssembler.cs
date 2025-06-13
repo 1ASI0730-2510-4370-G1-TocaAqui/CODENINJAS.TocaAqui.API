@@ -17,16 +17,16 @@ public static class CreateInvitationCommandFromResourceAssembler
     {
         return new CreateInvitationCommand(
             resource.EventId,
-            "Event Name", // EventName - placeholder
-            DateTime.UtcNow.AddDays(30), // EventDate - placeholder
-            "Event Location", // EventLocation - placeholder
-            "", // EventImageUrl - placeholder
+            resource.EventName,
+            resource.EventDate,
+            resource.EventLocation,
+            resource.EventImageUrl,
             resource.PromoterId,
-            "Promoter Name", // PromoterName - placeholder
+            resource.PromoterName,
             resource.ArtistId,
-            "Artist Name", // ArtistName - placeholder
+            resource.ArtistName,
             resource.Message,
-            "pending" // Status
+            resource.Status
         );
     }
 } 

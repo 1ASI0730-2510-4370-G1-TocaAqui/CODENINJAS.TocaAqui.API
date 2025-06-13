@@ -1,6 +1,6 @@
 using CODENINJAS.TocaAqui.API.Events.Domain.Model.Commands;
 
-namespace CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregates;
+namespace CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregate;
 
 /// <summary>
 ///     Invitation Aggregate - Represents an invitation from a promoter to a musician for an event
