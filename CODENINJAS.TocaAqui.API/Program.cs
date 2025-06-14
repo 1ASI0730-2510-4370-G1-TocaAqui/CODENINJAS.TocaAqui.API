@@ -1,26 +1,42 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using CODENINJAS.TocaAqui.API.Shared.Infrastructure.Persistence.EFC.Configuration;
+using CODENINJAS.TocaAqui.API.Shared.Domain.Repositories;
+using CODENINJAS.TocaAqui.API.Shared.Infrastructure.Persistence.EFC.Repositories;
+using CODENINJAS.TocaAqui.API.IAM.Application.Internal.OutboundServices;
+
 using CODENINJAS.TocaAqui.API.Events.Domain.Repositories;
 using CODENINJAS.TocaAqui.API.Events.Infrastructure.Repositories;
 using CODENINJAS.TocaAqui.API.Events.Domain.Services;
 using CODENINJAS.TocaAqui.API.Events.Application.Internal.CommandServices;
 using CODENINJAS.TocaAqui.API.Events.Application.Internal.QueryServices;
-using CODENINJAS.TocaAqui.API.Shared.Domain.Repositories;
-using CODENINJAS.TocaAqui.API.Shared.Infrastructure.Persistence.EFC.Repositories;
+using CODENINJAS.TocaAqui.API.IAM.Infrastructure.Hashing.BCrypt.Services;
+using CODENINJAS.TocaAqui.API.IAM.Infrastructure.Tokens.JWT.Services;
+using CODENINJAS.TocaAqui.API.IAM.Infrastructure.Tokens.JWT.Configuration;
+using CODENINJAS.TocaAqui.API.IAM.Infrastructure.Persistence.EFC.Repositories;
+using CODENINJAS.TocaAqui.API.IAM.Domain.Repositories;
+using CODENINJAS.TocaAqui.API.IAM.Domain.Services;
+using CODENINJAS.TocaAqui.API.IAM.Application.Internal.CommandServices;
+using CODENINJAS.TocaAqui.API.IAM.Application.Internal.QueryServices;
+using CODENINJAS.TocaAqui.API.IAM.Infrastructure.Pipeline.Middleware.Extensions;
+using CODENINJAS.TocaAqui.API.Shared.Interfaces.ASP.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // --------------------------------------------------
 // 1. Servicios de la aplicación
 // --------------------------------------------------
-builder.Services.AddControllers();
+builder.Services.AddControllers(opt =>
+{
+    // Convención kebab-case
+    opt.Conventions.Add(new KebabCaseRouteNamingConvention());
+});
 
 // ------------ CORS para frontend ------------------
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
-    {
+           {
         policy.AllowAnyOrigin()
               .AllowAnyMethod()
               .AllowAnyHeader();
@@ -43,32 +59,17 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // ------------- EF Core MySQL ----------------------
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                       ?? throw new Exception("Connection string is null");
 
-// Verify Database Connection String
-if (connectionString is null)
-    throw new Exception("Connection string is null");
-
-// Configure Database Context and Logging Levels
-if (builder.Environment.IsDevelopment())
-    builder.Services.AddDbContext<AppDbContext>(
-        options =>
-        {
-            options.UseMySQL(connectionString)
-                .LogTo(Console.WriteLine, LogLevel.Information)
-                .EnableSensitiveDataLogging()
-                .EnableDetailedErrors();
-        }
-    );
-else if (builder.Environment.IsProduction())
-    builder.Services.AddDbContext<AppDbContext>(
-        options =>
-        {
-            options.UseMySQL(connectionString)
-                .LogTo(Console.WriteLine, LogLevel.Error)
-                .EnableDetailedErrors();
-        }
-    );
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    options.UseMySQL(connectionString)
+           .LogTo(Console.WriteLine,
+                  builder.Environment.IsDevelopment() ? LogLevel.Information : LogLevel.Error)
+           .EnableDetailedErrors()
+           .EnableSensitiveDataLogging(builder.Environment.IsDevelopment());
+});
 
 // ------------- Dependencias de dominio ------------
 // Shared
@@ -83,6 +84,16 @@ builder.Services.AddScoped<IEventQueryService, EventQueryService>();
 builder.Services.AddScoped<IEventApplicantCommandService, EventApplicantCommandService>();
 builder.Services.AddScoped<IInvitationCommandService, InvitationCommandService>();
 
+// ---------- IAM bindings --------------------------
+builder.Services.Configure<TokenSettings>(
+    builder.Configuration.GetSection("TokenSettings"));
+
+builder.Services.AddScoped<IHashingService, HashingService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUserRepository,          UserRepository>();
+builder.Services.AddScoped<IUserCommandService,      UserCommandService>();
+builder.Services.AddScoped<IUserQueryService,        UserQueryService>();
+
 // --------------------------------------------------
 // 2. Construir app
 // --------------------------------------------------
@@ -91,12 +102,11 @@ var app = builder.Build();
 // ------------- Crear base de datos automáticamente ---------------
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<AppDbContext>();
-    context.Database.EnsureCreated();
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    context.Database.Migrate();   // aplica o crea la BD
 }
 
-// Swagger habilitado en todos los ambientes
+// ------------ Middleware pipeline ----------------
 app.UseSwagger();
 app.UseSwaggerUI(ui =>
 {
@@ -106,6 +116,9 @@ app.UseSwaggerUI(ui =>
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
+
+// --- IAM auth middleware (valida tokens) ----------
+app.UseRequestAuthorization();
 
 app.MapControllers();
 app.Run();
