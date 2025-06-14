@@ -1,27 +1,64 @@
-﻿namespace CODENINJAS.TocaAqui.API.Evaluations.Domain.Model.Aggregates;
+﻿using CODENINJAS.TocaAqui.API.Evaluations.Domain.Model.Commands;
 
-public class Evaluation
+namespace CODENINJAS.TocaAqui.API.Evaluations.Domain.Model.Aggregates;
+
+public partial class Evaluation
 {
-    public Guid Id { get; private set; }
-    public string EntityType { get; private set; } = string.Empty;
-    public Guid EntityId { get; private set; }
-    public int Score { get; private set; }
-    public string? Comment { get; private set; }
-    public DateTime CreatedAt { get; private set; }
+    public int Id { get; set; }
 
-    public Evaluation(Guid commandUserId, string entityType, Guid entityId, int score, string? comment)
-    {
-        Id = Guid.NewGuid();
-        EntityType = entityType;
-        EntityId = entityId;
-        Score = score;
-        Comment = comment;
-        CreatedAt = DateTime.UtcNow;
-    }
+    // Comunes
+    public int EventId { get; set; }
+    public int Rating { get; set; }
+    public string Comment { get; set; }
+    public string Type { get; set; } // "artist" o "venue"
+    public string Status { get; set; }
+
+    // Artist Evaluation (opcional)
+    public int? MusicianId { get; set; }
+    public int? PromoterId { get; set; }
+    public List<ChecklistItem>? ArtistChecklist { get; set; }
+
+    // Venue Evaluation (opcional)
+    public int? UserId { get; set; }
+    public string? Suggestions { get; set; }
+    public string? EventName { get; set; }
+    public string? EventDate { get; set; }
+    public string? EventLocation { get; set; }
+    public string? EventImageUrl { get; set; }
+    public string? Name { get; set; }
+    public string? Date { get; set; }
+    public string? Location { get; set; }
+    public string? ImageUrl { get; set; }
     
-    public void Update(int score, string? comment)
+    public Evaluation() { }
+    
+    public Evaluation(CreateEvaluationCommand command)
     {
-        Score = score;
-        Comment = comment;
+        // Comunes
+        EventId = command.EventId;
+        Rating = command.Rating;
+        Comment = command.Comment;
+        Type = command.Type;
+        Status = command.Status;
+
+        // Artist Evaluation (opcional)
+        MusicianId = command.MusicianId;
+        PromoterId = command.PromoterId;
+        ArtistChecklist = command.ArtistChecklist;
+
+        // Venue Evaluation (opcional)
+        UserId = command.UserId;
+        Suggestions = command.Suggestions;
+        EventName = command.EventName;
+        EventDate = command.EventDate;
+        EventLocation = command.EventLocation;
+        EventImageUrl = command.EventImageUrl;
+        Name = command.Name;
+        Date = command.Date;
+        Location = command.Location;
+        ImageUrl = command.ImageUrl;
     }
 }
+
+
+

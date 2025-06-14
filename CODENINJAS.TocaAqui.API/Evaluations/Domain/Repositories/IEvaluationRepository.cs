@@ -1,12 +1,9 @@
 ﻿using CODENINJAS.TocaAqui.API.Evaluations.Domain.Model.Aggregates;
+using CODENINJAS.TocaAqui.API.Shared.Domain.Repositories;
 
 namespace CODENINJAS.TocaAqui.API.Evaluations.Domain.Repositories;
 
-public interface IEvaluationRepository
+public interface IEvaluationRepository :IBaseRepository<Evaluation>
 {
-    Task<List<Evaluation>> GetAllAsync();
-    Task<Evaluation?> GetByIdAsync(Guid id);
-    Task<List<Evaluation>> GetByEntityAsync(Guid evaluatedEntityId, string entityType);
-    Task AddAsync(Evaluation evaluation);
-    Task DeleteAsync(Guid id);
+    Task<IEnumerable<Evaluation>>FindByTypeAsync(string type);
 }

@@ -1,29 +1,36 @@
 ﻿using CODENINJAS.TocaAqui.API.Evaluations.Domain.Model.Aggregates;
 using CODENINJAS.TocaAqui.API.Evaluations.Domain.Model.Commands;
 using CODENINJAS.TocaAqui.API.Evaluations.Domain.Repositories;
+using CODENINJAS.TocaAqui.API.Evaluations.Domain.Services;
+using CODENINJAS.TocaAqui.API.Shared.Domain.Repositories;
 
 namespace CODENINJAS.TocaAqui.API.Evaluations.Application.Internal.CommandServices;
 
-public class EvaluationCommandService
+public class EvaluationCommandService :IEvaluationCommandService
 {
-    private readonly IEvaluationRepository _repository;
+    private readonly IEvaluationRepository _evaluationRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public EvaluationCommandService(IEvaluationRepository repository)
+    public EvaluationCommandService(IEvaluationRepository evaluationRepository, IUnitOfWork unitOfWork)
     {
-        _repository = repository;
+        _evaluationRepository = evaluationRepository;
+        _unitOfWork = unitOfWork;
     }
-
-    public async Task<Evaluation> Handle(CreateEvaluationCommand command)
+    
+    public async Task<Evaluation?> Handle(CreateEvaluationCommand command)
     {
-        var evaluation = new Evaluation(
-            command.UserId,
-            command.EntityType,
-            command.EntityId,
-            command.Score,
-            command.Comment
-        );
-
-        await _repository.AddAsync(evaluation);
-        return evaluation;
+        var evaluation = new Evaluation(command);
+        try
+        {
+            await _evaluationRepository.AddAsync(evaluation);
+            await _unitOfWork.CompleteAsync();
+            return evaluation;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error creating invitation: {ex.Message}");
+            return null;
+        }
+        
     }
 }

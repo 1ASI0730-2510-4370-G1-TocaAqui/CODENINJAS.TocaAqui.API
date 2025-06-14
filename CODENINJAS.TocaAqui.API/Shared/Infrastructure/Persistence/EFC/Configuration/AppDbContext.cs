@@ -1,3 +1,4 @@
+using CODENINJAS.TocaAqui.API.Evaluations.Domain.Model.Aggregates;
 using CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregates;
 using CODENINJAS.TocaAqui.API.Shared.Infrastructure.Persistence.EFC.Configuration.Extensions;
 using EntityFrameworkCore.CreatedUpdatedDate.Extensions;
@@ -10,6 +11,8 @@ namespace CODENINJAS.TocaAqui.API.Shared.Infrastructure.Persistence.EFC.Configur
 /// </summary>
 public class AppDbContext(DbContextOptions options) : DbContext(options)
 {
+    public DbSet<Evaluation> Evaluations { get; set; } // <--- agrega esto
+
     protected override void OnConfiguring(DbContextOptionsBuilder builder)
     {
         // Add the created and updated interceptor
@@ -50,5 +53,16 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
         builder.Entity<Invitation>().Property(i => i.Id).IsRequired().ValueGeneratedOnAdd();
         builder.Entity<Invitation>().Property(i => i.Status).IsRequired().HasMaxLength(50);
         builder.Entity<Invitation>().Property(i => i.Message).HasMaxLength(1000);
+        
+        //Evaluations
+        builder.Entity<Evaluation>().HasKey(e => e.Id);
+        builder.Entity<Evaluation>().Property(e => e.Id).IsRequired().ValueGeneratedOnAdd();
+        builder.Entity<Evaluation>().Property(e => e.Type).IsRequired().HasMaxLength(20);
+        builder.Entity<Evaluation>().Property(e => e.Status).IsRequired().HasMaxLength(20);
+        builder.Entity<Evaluation>().Property(e => e.Comment).HasMaxLength(1000);
+        builder.Entity<Evaluation>().Property(e => e.Suggestions).HasMaxLength(1000);
+        builder.Entity<Evaluation>().Property(e => e.EventName).HasMaxLength(200);
+        builder.Entity<Evaluation>().Property(e => e.EventLocation).HasMaxLength(300);
+
     }
 } 
