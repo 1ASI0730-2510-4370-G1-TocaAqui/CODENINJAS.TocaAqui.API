@@ -116,6 +116,31 @@ public class EventApplicantsController : ControllerBase
     }
 
     /// <summary>
+    /// Get application by event ID and user ID
+    /// </summary>
+    /// <param name="eventId">Event ID</param>
+    /// <param name="userId">User ID</param>
+    /// <returns>Application details</returns>
+    [HttpGet("event/{eventId:int}/user/{userId:int}")]
+    [SwaggerOperation(
+        Summary = "Gets application by event ID and user ID",
+        Description = "Gets a specific application for an event by a user",
+        OperationId = "GetApplicationByEventAndUser")]
+    [SwaggerResponse(200, "The application was found", typeof(EventApplicantResource))]
+    [SwaggerResponse(404, "The application was not found")]
+    public async Task<ActionResult<EventApplicantResource>> GetApplicationByEventAndUser(int eventId, int userId)
+    {
+        var applicants = await _eventApplicantRepository.FindByEventIdAsync(eventId);
+        var applicant = applicants.FirstOrDefault(a => a.UserId == userId);
+        
+        if (applicant is null) 
+            return NotFound();
+        
+        var resource = EventApplicantResourceFromEntityAssembler.ToResourceFromEntity(applicant);
+        return Ok(resource);
+    }
+
+    /// <summary>
     /// Update application status
     /// </summary>
     /// <param name="id">Applicant ID</param>
