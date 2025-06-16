@@ -107,7 +107,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    context.Database.EnsureCreated();   // Asegura que la BD existe sin aplicar migraciones duplicadas
+    // context.Database.EnsureCreated();   // Comentado: las tablas ya existen via migraciones
 }
 
 // ------------ Middleware pipeline ----------------
