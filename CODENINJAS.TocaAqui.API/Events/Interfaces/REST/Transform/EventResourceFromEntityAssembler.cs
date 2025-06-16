@@ -1,4 +1,4 @@
-using CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregate;
+using CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregates;
 using CODENINJAS.TocaAqui.API.Events.Interfaces.REST.Resources;
 
 namespace CODENINJAS.TocaAqui.API.Events.Interfaces.REST.Transform;
@@ -19,24 +19,23 @@ public static class EventResourceFromEntityAssembler
             entity.Id,
             entity.PromoterId,
             entity.Name,
-            entity.EventTime.Date,
-            entity.EventTime.Time.ToString(@"hh\:mm"),
+            entity.Date,
+            entity.Time.ToString(@"hh\:mm\:ss"),
             entity.PublishDate,
             entity.Location,
             entity.ImageUrl,
-            entity.Status.ToString(),
-            entity.SoundcheckTime.Date,
-            entity.SoundcheckTime.Time.ToString(@"hh\:mm"),
+            entity.Status.ToString().ToLower(),
+            entity.SoundcheckDate,
+            entity.SoundcheckTime?.ToString(@"hh\:mm\:ss"),
             entity.Capacity,
-            entity.AvailableTickets,
-            entity.Admin.Name,
-            entity.Admin.Id,
-            entity.Admin.Contact,
+            entity.AdminName,
+            entity.AdminId,
+            entity.AdminContact,
             entity.Requirements,
             entity.Description,
-            entity.Payment.Amount,
+            entity.Payment,
             entity.Duration,
-            entity.Genre.ToString(),
+            entity.Genre.ToString().ToLower(),
             entity.Equipment
         );
     }

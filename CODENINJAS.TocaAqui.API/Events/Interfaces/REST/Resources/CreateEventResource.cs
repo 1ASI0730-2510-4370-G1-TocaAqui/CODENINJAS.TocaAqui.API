@@ -4,7 +4,7 @@ namespace CODENINJAS.TocaAqui.API.Events.Interfaces.REST.Resources;
 ///     Resource for creating a new event
 /// </summary>
 public record CreateEventResource(
-    int PromoterId,
+    int? PromoterId,
     string Name,
     DateTime Date,
     string Time,

@@ -1,4 +1,4 @@
-using CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregate;
+using CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregates;
 using CODENINJAS.TocaAqui.API.Events.Domain.Model.Queries;
 using CODENINJAS.TocaAqui.API.Events.Domain.Repositories;
 using CODENINJAS.TocaAqui.API.Events.Domain.Services;
@@ -6,7 +6,7 @@ using CODENINJAS.TocaAqui.API.Events.Domain.Services;
 namespace CODENINJAS.TocaAqui.API.Events.Application.Internal.QueryServices;
 
 /// <summary>
-///     Service to handle event queries
+///     Event query service implementation
 /// </summary>
 public class EventQueryService : IEventQueryService
 {
@@ -17,9 +17,9 @@ public class EventQueryService : IEventQueryService
         _eventRepository = eventRepository;
     }
 
-    public async Task<IEnumerable<Event>> GetAllEventsAsync()
+    public async Task<IEnumerable<Event>> Handle(GetEventsByPromoterIdQuery query)
     {
-        return await _eventRepository.ListAsync();
+        return await _eventRepository.FindByPromoterIdAsync(query.PromoterId);
     }
 
     public async Task<Event?> Handle(GetEventByIdQuery query)
@@ -27,8 +27,8 @@ public class EventQueryService : IEventQueryService
         return await _eventRepository.FindByIdWithDetailsAsync(query.Id);
     }
 
-    public async Task<IEnumerable<Event>> Handle(GetEventsByPromoterIdQuery query)
+    public async Task<IEnumerable<Event>> GetAllEventsAsync()
     {
-        return await _eventRepository.FindByPromoterIdAsync(query.PromoterId);
+        return await _eventRepository.ListAsync();
     }
 } 

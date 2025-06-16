@@ -1,4 +1,5 @@
-using CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregate;
+using CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregates;
+using CODENINJAS.TocaAqui.API.Events.Domain.Model.Entities;
 using CODENINJAS.TocaAqui.API.Shared.Infrastructure.Persistence.EFC.Configuration.Extensions;
 using EntityFrameworkCore.CreatedUpdatedDate.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -22,72 +23,53 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
         base.OnModelCreating(builder);
 
         // Event Configuration
-        builder.Entity<Event>(e =>
-        {
-            e.ToTable("event");
-            e.HasKey(x => x.Id);
-            e.Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
-            e.Property(x => x.Name).IsRequired().HasMaxLength(200);
-            e.Property(x => x.Description).HasMaxLength(1000);
-            e.Property(x => x.Equipment).HasMaxLength(500);
-            e.Property(x => x.Requirements).HasMaxLength(500);
-            e.Property(x => x.ImageUrl).HasMaxLength(500);
-            e.Property(x => x.Location).HasMaxLength(500);
-            
-            // Configure EventAdmin as owned type
-            e.OwnsOne(x => x.Admin, admin =>
-            {
-                admin.Property(a => a.Name).HasColumnName("admin_name").HasMaxLength(100);
-                admin.Property(a => a.Contact).HasColumnName("admin_contact").HasMaxLength(200);
-                admin.Property(a => a.Id).HasColumnName("admin_id");
-            });
-
-            // Configure value objects
-            e.OwnsOne(x => x.EventTime);
-            e.OwnsOne(x => x.SoundcheckTime);
-            e.OwnsOne(x => x.Payment);
-        });
+        builder.Entity<Event>().HasKey(e => e.Id);
+        builder.Entity<Event>().Property(e => e.Id).IsRequired().ValueGeneratedOnAdd();
+        builder.Entity<Event>().Property(e => e.Name).IsRequired().HasMaxLength(200);
+        builder.Entity<Event>().Property(e => e.Description).HasMaxLength(1000);
+        builder.Entity<Event>().Property(e => e.Location).IsRequired().HasMaxLength(300);
+        builder.Entity<Event>().Property(e => e.Genre).HasMaxLength(100);
+        builder.Entity<Event>().Property(e => e.Payment).HasPrecision(10, 2);
 
         // EventApplicant Configuration
-        builder.Entity<EventApplicant>(ea =>
-        {
-            ea.ToTable("event_applicant");
-            ea.HasKey(x => x.Id);
-            ea.Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
-            ea.Property(x => x.Status).IsRequired().HasMaxLength(50);
-        });
+        builder.Entity<EventApplicant>().HasKey(ea => ea.Id);
+        builder.Entity<EventApplicant>().Property(ea => ea.Id).IsRequired().ValueGeneratedOnAdd();
+        builder.Entity<EventApplicant>().Property(ea => ea.Status).IsRequired().HasMaxLength(50);
+        builder.Entity<EventApplicant>().HasOne<Event>()
+            .WithMany()
+            .HasForeignKey(ea => ea.EventId)
+            .IsRequired();
         
-        // Invitation Configuration
-        builder.Entity<Invitation>(i =>
-        {
-            i.ToTable("invitation");
-            i.HasKey(x => x.Id);
-            i.Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
-            i.Property(x => x.EventName).IsRequired().HasMaxLength(100);
-            i.Property(x => x.EventLocation).IsRequired().HasMaxLength(200);
-            i.Property(x => x.EventImageUrl).HasMaxLength(500);
-            i.Property(x => x.PromoterName).IsRequired().HasMaxLength(100);
-            i.Property(x => x.ArtistName).IsRequired().HasMaxLength(100);
-            i.Property(x => x.Message).HasMaxLength(1000);
-            i.Property(x => x.Status).IsRequired().HasMaxLength(50);
-        });
-
         // Contract Configuration
-        builder.Entity<Contract>(c =>
-        {
-            c.ToTable("contract");
-            c.HasKey(x => x.Id);
-            c.Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
-            c.Property(x => x.Content).HasMaxLength(5000);
-        });
+        builder.Entity<Contract>().HasKey(c => c.Id);
+        builder.Entity<Contract>().Property(c => c.Id).IsRequired().ValueGeneratedOnAdd();
+        builder.Entity<Contract>().Property(c => c.Content).IsRequired().HasMaxLength(5000);
+        builder.Entity<Contract>().Property(c => c.Signature).HasMaxLength(1000);
+        builder.Entity<Contract>().HasOne<EventApplicant>()
+            .WithOne()
+            .HasForeignKey<Contract>(c => c.EventApplicationId)
+            .IsRequired();
 
         // RiderTechnical Configuration
-        builder.Entity<RiderTechnical>(r =>
-        {
-            r.ToTable("rider_technical");
-            r.HasKey(x => x.Id);
-            r.Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
-            r.Property(x => x.FilePath).IsRequired().HasMaxLength(500);
-        });
+        builder.Entity<RiderTechnical>().HasKey(r => r.Id);
+        builder.Entity<RiderTechnical>().Property(r => r.Id).IsRequired().ValueGeneratedOnAdd();
+        builder.Entity<RiderTechnical>().Property(r => r.Content).IsRequired().HasMaxLength(5000);
+        builder.Entity<RiderTechnical>().HasOne<EventApplicant>()
+            .WithOne()
+            .HasForeignKey<RiderTechnical>(r => r.EventApplicationId)
+            .IsRequired();
+
+        // Invitation Configuration
+        builder.Entity<Invitation>().HasKey(i => i.Id);
+        builder.Entity<Invitation>().Property(i => i.Id).IsRequired().ValueGeneratedOnAdd();
+        builder.Entity<Invitation>().Property(i => i.Status).IsRequired().HasMaxLength(50);
+        builder.Entity<Invitation>().Property(i => i.Message).HasMaxLength(1000);
+        builder.Entity<Invitation>().HasOne<Event>()
+            .WithMany()
+            .HasForeignKey(i => i.EventId)
+            .IsRequired();
+
+        // Apply snake case naming convention
+        builder.UseSnakeCaseNamingConvention();
     }
 } 

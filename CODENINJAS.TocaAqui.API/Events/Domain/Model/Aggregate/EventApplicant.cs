@@ -1,6 +1,8 @@
 using CODENINJAS.TocaAqui.API.Events.Domain.Model.Commands;
+using CODENINJAS.TocaAqui.API.Events.Domain.Model.Entities;
+using CODENINJAS.TocaAqui.API.Events.Domain.Model.ValueObjects;
 
-namespace CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregate;
+namespace CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregates;
 
 /// <summary>
 ///     EventApplicant Aggregate - Represents the relationship between a user and an event application
@@ -9,7 +11,7 @@ public partial class EventApplicant
 {
     protected EventApplicant()
     {
-        Status = "pending";
+        Status = EEventApplicantStatus.Pending;
         ApplicationDate = DateTime.UtcNow;
     }
 
@@ -21,7 +23,7 @@ public partial class EventApplicant
     {
         UserId = command.UserId;
         EventId = command.EventId;
-        Status = command.Status;
+        Status = Enum.Parse<EEventApplicantStatus>(command.Status);
         ApplicationDate = command.ApplicationDate;
         ContractSigned = command.ContractSigned;
         RiderUploaded = command.RiderUploaded;
@@ -32,22 +34,26 @@ public partial class EventApplicant
     public int Id { get; }
     public int UserId { get; private set; }
     public int EventId { get; private set; }
-    public string Status { get; private set; } // pending, contract_pending, signed, rejected
+    public EEventApplicantStatus Status { get; private set; }
     public DateTime ApplicationDate { get; private set; }
     public bool ContractSigned { get; private set; }
     public bool RiderUploaded { get; private set; }
-    public bool IsInvited { get; private set; } // Indicates if the application comes from an invitation
+    public bool IsInvited { get; private set; }
+
+    // Navigation properties
+    public Contract? Contract { get; private set; }
+    public RiderTechnical? RiderTechnical { get; private set; }
 
     // Domain methods
     public void UpdateStatus(string status)
     {
-        Status = status;
+        Status = Enum.Parse<EEventApplicantStatus>(status);
     }
 
     public void SignContract()
     {
         ContractSigned = true;
-        Status = "signed";
+        Status = EEventApplicantStatus.Signed;
     }
 
     public void UploadRider()
@@ -57,14 +63,14 @@ public partial class EventApplicant
 
     public void AcceptInvitation()
     {
-        if (IsInvited && Status == "pending")
+        if (IsInvited && Status == EEventApplicantStatus.Pending)
         {
-            Status = "contract_pending";
+            Status = EEventApplicantStatus.ContractPending;
         }
     }
 
     public void RejectApplication()
     {
-        Status = "rejected";
+        Status = EEventApplicantStatus.Rejected;
     }
 } 

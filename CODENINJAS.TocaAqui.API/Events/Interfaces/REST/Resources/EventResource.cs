@@ -5,7 +5,7 @@ namespace CODENINJAS.TocaAqui.API.Events.Interfaces.REST.Resources;
 /// </summary>
 public record EventResource(
     int Id,
-    int PromoterId,
+    int? PromoterId,
     string Name,
     DateTime Date,
     string Time,
@@ -16,7 +16,6 @@ public record EventResource(
     DateTime? SoundcheckDate,
     string? SoundcheckTime,
     int Capacity,
-    int AvailableTickets,
     string AdminName,
     int? AdminId,
     string AdminContact,

@@ -1,4 +1,4 @@
-using CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregate;
+using CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregates;
 using CODENINJAS.TocaAqui.API.Events.Interfaces.REST.Resources;
 
 namespace CODENINJAS.TocaAqui.API.Events.Interfaces.REST.Transform;
@@ -20,7 +20,7 @@ public static class InvitationResourceFromEntityAssembler
             entity.EventId,
             entity.ArtistId,
             entity.PromoterId,
-            entity.Status,
+            entity.Status.ToString(),
             entity.CreatedAt,
             entity.Message
         );

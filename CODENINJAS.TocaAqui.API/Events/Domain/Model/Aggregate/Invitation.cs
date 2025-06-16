@@ -1,6 +1,7 @@
 using CODENINJAS.TocaAqui.API.Events.Domain.Model.Commands;
+using CODENINJAS.TocaAqui.API.Events.Domain.Model.ValueObjects;
 
-namespace CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregate;
+namespace CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregates;
 
 /// <summary>
 ///     Invitation Aggregate - Represents an invitation from a promoter to a musician for an event
@@ -15,7 +16,7 @@ public partial class Invitation
         PromoterName = string.Empty;
         ArtistName = string.Empty;
         Message = string.Empty;
-        Status = "pending";
+        Status = EInvitationStatus.Pending;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
@@ -36,7 +37,7 @@ public partial class Invitation
         ArtistId = command.ArtistId;
         ArtistName = command.ArtistName;
         Message = command.Message;
-        Status = command.Status;
+        Status = Enum.Parse<EInvitationStatus>(command.Status);
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
@@ -53,30 +54,30 @@ public partial class Invitation
     public int ArtistId { get; private set; }
     public string ArtistName { get; private set; }
     public string Message { get; private set; }
-    public string Status { get; private set; } // pending, accepted, rejected
+    public EInvitationStatus Status { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 
     // Domain methods
+    public void UpdateStatus(string status)
+    {
+        Status = Enum.Parse<EInvitationStatus>(status);
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public void Accept()
     {
-        Status = "accepted";
+        Status = EInvitationStatus.Accepted;
         UpdatedAt = DateTime.UtcNow;
     }
 
     public void Reject()
     {
-        Status = "rejected";
+        Status = EInvitationStatus.Rejected;
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void UpdateStatus(string status)
-    {
-        Status = status;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    public bool IsPending => Status == "pending";
-    public bool IsAccepted => Status == "accepted";
-    public bool IsRejected => Status == "rejected";
+    public bool IsPending => Status == EInvitationStatus.Pending;
+    public bool IsAccepted => Status == EInvitationStatus.Accepted;
+    public bool IsRejected => Status == EInvitationStatus.Rejected;
 } 

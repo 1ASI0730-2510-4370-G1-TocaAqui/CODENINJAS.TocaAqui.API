@@ -1,11 +1,10 @@
 using CODENINJAS.TocaAqui.API.Events.Domain.Model.Commands;
-using CODENINJAS.TocaAqui.API.Events.Domain.Model.Entities;
 using CODENINJAS.TocaAqui.API.Events.Domain.Model.ValueObjects;
 
-namespace CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregate;
+namespace CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregates;
 
 /// <summary>
-/// Event Aggregate - Represents a musical event in the Toca Aquí platform
+///     Event Aggregate - Represents a musical event in the Toca Aquí platform
 /// </summary>
 public partial class Event
 {
@@ -16,97 +15,92 @@ public partial class Event
         ImageUrl = string.Empty;
         Description = string.Empty;
         Requirements = string.Empty;
-        Genre = EGenre.Other;
         Equipment = string.Empty;
-        EventTime = new EventDateTime();
-        SoundcheckTime = new EventDateTime();
-        Capacity = 0;
-        AvailableTickets = 0;
-        Payment = new PaymentInfo();
+        AdminName = string.Empty;
+        AdminContact = string.Empty;
         Status = EEventStatus.Pending;
-        Admin = new EventAdmin();
+        Genre = EMusicGenre.Other;
     }
 
+    /// <summary>
+    ///     Constructor for the Event aggregate.
+    /// </summary>
+    /// <remarks>
+    ///     The constructor acts as the command handler for the CreateEventCommand.
+    /// </remarks>
+    /// <param name="command">The CreateEventCommand</param>
     public Event(CreateEventCommand command)
     {
         PromoterId = command.PromoterId;
         Name = command.Name;
-        EventTime = new EventDateTime(command.Date, command.Time);
+        Date = command.Date;
+        Time = TimeSpan.Parse(command.Time);
         PublishDate = command.PublishDate;
         Location = command.Location;
         ImageUrl = command.ImageUrl;
-        Status = EEventStatus.Pending;
-        SoundcheckTime = command.SoundcheckDate.HasValue && command.SoundcheckTime.HasValue 
-            ? new EventDateTime(command.SoundcheckDate.Value, command.SoundcheckTime.Value)
-            : new EventDateTime();
+        Status = Enum.Parse<EEventStatus>(command.Status);
+        SoundcheckDate = command.SoundcheckDate;
+        SoundcheckTime = !string.IsNullOrEmpty(command.SoundcheckTime) ? TimeSpan.Parse(command.SoundcheckTime) : null;
         Capacity = command.Capacity;
-        AvailableTickets = command.Capacity;
-        Admin = new EventAdmin(command.AdminName, command.AdminContact, command.AdminId);
+        AdminName = command.AdminName;
+        AdminId = command.AdminId;
+        AdminContact = command.AdminContact;
         Requirements = command.Requirements;
         Description = command.Description;
-        Payment = new PaymentInfo(command.Payment);
+        Payment = command.Payment;
         Duration = command.Duration;
-        Genre = Enum.TryParse<EGenre>(command.Genre, true, out var genre) ? genre : EGenre.Other;
+        Genre = Enum.Parse<EMusicGenre>(command.Genre);
         Equipment = command.Equipment;
     }
 
     // Properties
     public int Id { get; }
-    public int PromoterId { get; private set; }
+    public int? PromoterId { get; private set; }
     public string Name { get; private set; }
-    public EventDateTime EventTime { get; private set; }
+    public DateTime Date { get; private set; }
+    public TimeSpan Time { get; private set; }
     public DateTime PublishDate { get; private set; }
     public string Location { get; private set; }
     public string ImageUrl { get; private set; }
     public EEventStatus Status { get; private set; }
-    public EventDateTime SoundcheckTime { get; private set; }
+    public DateTime? SoundcheckDate { get; private set; }
+    public TimeSpan? SoundcheckTime { get; private set; }
     public int Capacity { get; private set; }
-    public int AvailableTickets { get; private set; }
-    public EventAdmin Admin { get; private set; }
+    public string AdminName { get; private set; }
+    public int? AdminId { get; private set; }
+    public string AdminContact { get; private set; }
     public string Requirements { get; private set; }
     public string Description { get; private set; }
-    public PaymentInfo Payment { get; private set; }
+    public decimal Payment { get; private set; }
     public int? Duration { get; private set; }
-    public EGenre Genre { get; private set; }
+    public EMusicGenre Genre { get; private set; }
     public string Equipment { get; private set; }
 
     // Domain methods
-    public void UpdateEvent(UpdateEventCommand command)
+    public void Update(UpdateEventCommand command)
     {
-        if (!CanBeModified())
-            throw new InvalidOperationException("Event cannot be modified in its current state.");
-
         Name = command.Name;
-        EventTime = new EventDateTime(command.Date, command.Time);
+        Date = command.Date;
+        Time = TimeSpan.Parse(command.Time);
         Location = command.Location;
-        Description = command.Description;
-        Requirements = command.Requirements;
-        Payment = new PaymentInfo(command.Payment);
-        Genre = Enum.TryParse<EGenre>(command.Genre, true, out var genre) ? genre : EGenre.Other;
-        Equipment = command.Equipment;
+        ImageUrl = command.ImageUrl;
+        Status = Enum.Parse<EEventStatus>(command.Status);
+        SoundcheckDate = command.SoundcheckDate;
+        SoundcheckTime = !string.IsNullOrEmpty(command.SoundcheckTime) ? TimeSpan.Parse(command.SoundcheckTime) : null;
         Capacity = command.Capacity;
-        AvailableTickets = command.Capacity;
+        AdminName = command.AdminName;
+        AdminId = command.AdminId;
+        AdminContact = command.AdminContact;
+        Requirements = command.Requirements;
+        Description = command.Description;
+        Payment = command.Payment;
+        Duration = command.Duration;
+        Genre = Enum.Parse<EMusicGenre>(command.Genre);
+        Equipment = command.Equipment;
     }
 
-    public void UpdateStatus(EEventStatus newStatus)
+    public void UpdateStatus(string status)
     {
-        Status = newStatus;
-    }
-
-    public bool CanBeModified()
-    {
-        return Status != EEventStatus.Cancelled && 
-               Status != EEventStatus.Completed && 
-               EventTime.Date > DateTime.Now;
-    }
-
-    public bool HasAvailableTickets()
-    {
-        return Capacity > 0;
-    }
-
-    public void UpdateAdminContact(string newContact)
-    {
-        Admin.UpdateContact(newContact);
+        Status = Enum.Parse<EEventStatus>(status);
     }
 } 

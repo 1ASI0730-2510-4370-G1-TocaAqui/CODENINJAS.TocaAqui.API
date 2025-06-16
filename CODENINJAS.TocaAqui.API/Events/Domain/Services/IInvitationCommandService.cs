@@ -1,4 +1,4 @@
-using CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregate;
+using CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregates;
 using CODENINJAS.TocaAqui.API.Events.Domain.Model.Commands;
 
 namespace CODENINJAS.TocaAqui.API.Events.Domain.Services;

@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using CODENINJAS.TocaAqui.API.Shared.Infrastructure.Persistence.EFC.Configuration;
+using CODENINJAS.TocaAqui.API.Events.Domain.Repositories;
+using CODENINJAS.TocaAqui.API.Events.Infrastructure.Repositories;
+using CODENINJAS.TocaAqui.API.Events.Domain.Services;
 using CODENINJAS.TocaAqui.API.Events.Application.Internal.CommandServices;
 using CODENINJAS.TocaAqui.API.Events.Application.Internal.QueryServices;
-using CODENINJAS.TocaAqui.API.Events.Domain.Repositories;
-using CODENINJAS.TocaAqui.API.Events.Domain.Services;
-using CODENINJAS.TocaAqui.API.Events.Infrastructure.Repositories;
 using CODENINJAS.TocaAqui.API.Shared.Domain.Repositories;
-using CODENINJAS.TocaAqui.API.Shared.Infrastructure.Persistence.EFC.Configuration;
 using CODENINJAS.TocaAqui.API.Shared.Infrastructure.Persistence.EFC.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 // --------------------------------------------------
 // 1. Servicios de la aplicación
 // --------------------------------------------------
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddControllers();
 
 // ------------ CORS para frontend ------------------
@@ -54,9 +55,7 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddDbContext<AppDbContext>(
         options =>
         {
-            options.UseMySql(
-                connectionString,
-                ServerVersion.AutoDetect(connectionString))
+            options.UseMySQL(connectionString)
                 .LogTo(Console.WriteLine, LogLevel.Information)
                 .EnableSensitiveDataLogging()
                 .EnableDetailedErrors();
@@ -66,29 +65,25 @@ else if (builder.Environment.IsProduction())
     builder.Services.AddDbContext<AppDbContext>(
         options =>
         {
-            options.UseMySql(
-                connectionString,
-                ServerVersion.AutoDetect(connectionString))
+            options.UseMySQL(connectionString)
                 .LogTo(Console.WriteLine, LogLevel.Error)
                 .EnableDetailedErrors();
         }
     );
 
 // ------------- Dependencias de dominio ------------
-// Events
+// Shared
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// Events
 builder.Services.AddScoped<IEventRepository, EventRepository>();
-
-// Add services
-builder.Services.AddScoped<IEventQueryService, EventQueryService>();
-builder.Services.AddScoped<IEventCommandService, EventCommandService>();
-
-// Event Applicants
 builder.Services.AddScoped<IEventApplicantRepository, EventApplicantRepository>();
-builder.Services.AddScoped<IEventApplicantCommandService, EventApplicantCommandService>();
-
-// Invitations
 builder.Services.AddScoped<IInvitationRepository, InvitationRepository>();
+builder.Services.AddScoped<IContractRepository, ContractRepository>();
+builder.Services.AddScoped<IRiderTechnicalRepository, RiderTechnicalRepository>();
+builder.Services.AddScoped<IEventCommandService, EventCommandService>();
+builder.Services.AddScoped<IEventQueryService, EventQueryService>();
+builder.Services.AddScoped<IEventApplicantCommandService, EventApplicantCommandService>();
 builder.Services.AddScoped<IInvitationCommandService, InvitationCommandService>();
 
 // --------------------------------------------------

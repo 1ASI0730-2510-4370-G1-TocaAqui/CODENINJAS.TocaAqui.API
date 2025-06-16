@@ -1,9 +1,9 @@
 namespace CODENINJAS.TocaAqui.API.Events.Domain.Model.ValueObjects;
 
 /// <summary>
-/// Represents the musical genre in the Toca Aquí platform.
+///     Representa los géneros musicales disponibles en la plataforma Toca Aquí
 /// </summary>
-public enum EGenre
+public enum EMusicGenre
 {
     Rock,
     Pop,
@@ -11,9 +11,9 @@ public enum EGenre
     Blues,
     Classical,
     Electronic,
-    HipHop,
-    Reggae,
-    Metal,
     Folk,
+    HipHop,
+    Metal,
+    Reggae,
     Other
 } 

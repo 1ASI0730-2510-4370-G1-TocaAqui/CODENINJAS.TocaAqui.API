@@ -1,11 +1,11 @@
 using CODENINJAS.TocaAqui.API.Events.Domain.Model.Commands;
 
-namespace CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregate;
+namespace CODENINJAS.TocaAqui.API.Events.Domain.Model.Entities;
 
 /// <summary>
-///     Contract Aggregate - Represents a contract between a promoter and musician for an event
+///     Contract Entity - Represents a contract between a promoter and musician for an event
 /// </summary>
-public partial class Contract
+public class Contract
 {
     protected Contract()
     {
@@ -13,7 +13,7 @@ public partial class Contract
     }
 
     /// <summary>
-    ///     Constructor for the Contract aggregate.
+    ///     Constructor for the Contract entity.
     /// </summary>
     /// <param name="command">The CreateContractCommand</param>
     public Contract(CreateContractCommand command)

@@ -1,4 +1,4 @@
-using CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregate;
+using CODENINJAS.TocaAqui.API.Events.Domain.Model.Aggregates;
 using CODENINJAS.TocaAqui.API.Events.Interfaces.REST.Resources;
 
 namespace CODENINJAS.TocaAqui.API.Events.Interfaces.REST.Transform;
@@ -19,7 +19,7 @@ public static class EventApplicantResourceFromEntityAssembler
             entity.Id,
             entity.UserId,
             entity.EventId,
-            entity.Status,
+            entity.Status.ToString(),
             entity.ApplicationDate,
             entity.ContractSigned,
             entity.RiderUploaded,
