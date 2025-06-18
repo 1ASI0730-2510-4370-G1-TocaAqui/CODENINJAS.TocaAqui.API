@@ -14,6 +14,8 @@ public enum EMusicGenre
     Folk,
     HipHop,
     Metal,
-    Reggae,
+    Reggaeton,
+    Salsa,
+    Cumbia,
     Other
 } 
