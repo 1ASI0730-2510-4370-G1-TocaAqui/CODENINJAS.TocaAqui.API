@@ -2,9 +2,9 @@
 
 public class GetProfileByIdQuery
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
-    public GetProfileByIdQuery(Guid id)
+    public GetProfileByIdQuery(int id)
     {
         Id = id;
     }

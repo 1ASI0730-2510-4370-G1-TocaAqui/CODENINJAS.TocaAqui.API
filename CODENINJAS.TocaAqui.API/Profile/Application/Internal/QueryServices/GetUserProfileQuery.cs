@@ -2,5 +2,10 @@
 
 public class GetUserProfileQuery
 {
-    public Guid ProfileId { get; set; }
+    public int Id { get; set; }
+
+    public GetUserProfileQuery(int id)
+    {
+        Id = id;
+    }
 }

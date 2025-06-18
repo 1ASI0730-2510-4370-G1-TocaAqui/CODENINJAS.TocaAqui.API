@@ -25,7 +25,7 @@ public class ProfilesController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(int id)
     {
         var profile = await _mediator.Send(new GetProfileByIdQuery(id));
         return profile is not null ? Ok(profile) : NotFound();
@@ -40,7 +40,7 @@ public class ProfilesController : ControllerBase
     }
     
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProfileResource resource)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateProfileResource resource)
     {
         var command = new UpdateProfileCommand(id, resource.Name, resource.Bio, resource.Genre, resource.Type);
         var result = await _mediator.Send(command);
@@ -48,7 +48,7 @@ public class ProfilesController : ControllerBase
     }
 
     [HttpPost("{id}/upload-image")]
-    public async Task<IActionResult> UploadImage(Guid id, [FromForm] UploadImageResource file)
+    public async Task<IActionResult> UploadImage(int id, [FromForm] UploadImageResource file)
     {
         if (file.Image is null || file.Image.Length == 0) return BadRequest("Invalid image");
 

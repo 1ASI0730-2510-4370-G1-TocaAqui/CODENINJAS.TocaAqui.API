@@ -13,9 +13,9 @@ public class ProfileRepository : IProfileRepository
         _context = context;
     }
 
-    public async Task<CODENINJAS.TocaAqui.API.Profile.Domain.Model.Aggregates.Profile?> GetByIdAsync(ProfileId id)
+    public async Task<CODENINJAS.TocaAqui.API.Profile.Domain.Model.Aggregates.Profile?> GetByIdAsync(int id)
     {
-        return await _context.Profiles.FindAsync(id.Value);
+        return await _context.Profiles.FindAsync(id);
     }
 
     public async Task<CODENINJAS.TocaAqui.API.Profile.Domain.Model.Aggregates.Profile?> GetByEmailAsync(Email email)
@@ -39,7 +39,7 @@ public class ProfileRepository : IProfileRepository
         _context.Profiles.Update(profile);
     }
 
-    public async Task<CODENINJAS.TocaAqui.API.Profile.Domain.Model.Aggregates.Profile?> FindByIdAsync(Guid id)
+    public async Task<CODENINJAS.TocaAqui.API.Profile.Domain.Model.Aggregates.Profile?> FindByIdAsync(int id)
     {
         return await _context.Profiles.FindAsync(id);
     }

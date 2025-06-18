@@ -14,12 +14,12 @@ public class GetUserProfileHandler
 
     public async Task<ProfileDto> HandleAsync(GetUserProfileQuery query)
     {
-        var profile = await _profileRepository.FindByIdAsync(query.ProfileId);
+        var profile = await _profileRepository.FindByIdAsync(query.Id);
         if (profile == null) throw new Exception("Perfil no encontrado");
 
         return new ProfileDto
         {
-            Id = profile.Id.Value,
+            Id = profile.Id,
             Name = profile.Name,
             Email = profile.Email.Value,
             Bio = profile.Description,

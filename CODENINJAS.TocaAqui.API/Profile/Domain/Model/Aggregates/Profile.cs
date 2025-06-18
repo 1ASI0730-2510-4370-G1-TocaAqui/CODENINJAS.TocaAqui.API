@@ -4,7 +4,7 @@ namespace CODENINJAS.TocaAqui.API.Profile.Domain.Model.Aggregates;
 
 public class Profile
 {
-    public ProfileId Id { get; private set; }
+    public int Id { get; private set; }
     public string Name { get; private set; }
     public Email Email { get; private set; }
     public string Genre { get; private set; }
@@ -12,7 +12,7 @@ public class Profile
     public string Description { get; private set; }
     public string? ProfileImagePath { get; private set; }
     
-    public Profile(ProfileId id, string name, Email email, string genre, string type, string description, string? profileImagePath = null)
+    public Profile(int id, string name, Email email, string genre, string type, string description, string? profileImagePath = null)
     {
         Id = id;
         Name = name;
