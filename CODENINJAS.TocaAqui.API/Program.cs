@@ -20,6 +20,11 @@ using CODENINJAS.TocaAqui.API.IAM.Application.Internal.CommandServices;
 using CODENINJAS.TocaAqui.API.IAM.Application.Internal.QueryServices;
 using CODENINJAS.TocaAqui.API.IAM.Infrastructure.Pipeline.Middleware.Extensions;
 using CODENINJAS.TocaAqui.API.Shared.Interfaces.ASP.Configuration;
+using CODENINJAS.TocaAqui.API.Payments.Domain.Repositories;
+using CODENINJAS.TocaAqui.API.Payments.Infrastructure.Persistence.EFC.Repositories;
+using CODENINJAS.TocaAqui.API.Payments.Domain.Services;
+using CODENINJAS.TocaAqui.API.Payments.Application.Internal.CommandServices;
+using CODENINJAS.TocaAqui.API.Payments.Application.Internal.QueryServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -97,6 +102,11 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUserRepository,          UserRepository>();
 builder.Services.AddScoped<IUserCommandService,      UserCommandService>();
 builder.Services.AddScoped<IUserQueryService,        UserQueryService>();
+
+// Payments
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IPaymentCommandService, PaymentCommandService>();
+builder.Services.AddScoped<IPaymentQueryService, PaymentQueryService>();
 
 // --------------------------------------------------
 // 2. Construir app
