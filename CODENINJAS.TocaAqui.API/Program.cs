@@ -120,13 +120,17 @@ using (var scope = app.Services.CreateScope())
     // context.Database.EnsureCreated();   // Comentado: las tablas ya existen via migraciones
 }
 
-// ------------ Middleware pipeline ----------------
-app.UseSwagger();
-app.UseSwaggerUI(ui =>
-{
-    ui.SwaggerEndpoint("/swagger/v1/swagger.json", "CODENINJAS.TocaAqui.API v1");
-    ui.RoutePrefix = string.Empty;
-});
+// ------------ Configure the HTTP request pipeline ----------------
+//if (app.Environment.IsDevelopment())
+//{
+    // Swagger will be available also on production hosting
+    app.UseSwagger();
+    app.UseSwaggerUI(ui =>
+    {
+        ui.SwaggerEndpoint("/swagger/v1/swagger.json", "CODENINJAS.TocaAqui.API v1");
+        ui.RoutePrefix = string.Empty;
+    });
+//}
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
