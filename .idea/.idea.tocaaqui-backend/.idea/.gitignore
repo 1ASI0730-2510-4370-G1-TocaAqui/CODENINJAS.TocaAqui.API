@@ -1,21 +1,11 @@
-<<<<<<< HEAD
-# Default ignored files
-=======
 ﻿# Default ignored files
->>>>>>> feature/profile
 /shelf/
 /workspace.xml
 # Rider ignored files
 /contentModel.xml
-<<<<<<< HEAD
-/projectSettingsUpdater.xml
 /modules.xml
-/.idea.CODENINJAS.TocaAqui.API.iml
-=======
-/.idea.CODENINJAS.TocaAqui.API.iml
-/modules.xml
+/.idea.tocaaqui-backend.iml
 /projectSettingsUpdater.xml
->>>>>>> feature/profile
 # Editor-based HTTP Client requests
 /httpRequests/
 # Datasource local storage ignored files

@@ -5,11 +5,25 @@ using CODENINJAS.TocaAqui.API.Shared.Domain.Repositories;
 using CODENINJAS.TocaAqui.API.Shared.Infrastructure.Persistence.EFC.Repositories;
 using CODENINJAS.TocaAqui.API.IAM.Application.Internal.OutboundServices;
 
+using CODENINJAS.TocaAqui.API.Shared.Domain.Repositories;
+using CODENINJAS.TocaAqui.API.Shared.Infrastructure.Persistence.EFC.Repositories;
+using CODENINJAS.TocaAqui.API.IAM.Application.Internal.OutboundServices;
+
 using CODENINJAS.TocaAqui.API.Events.Domain.Repositories;
 using CODENINJAS.TocaAqui.API.Events.Infrastructure.Repositories;
 using CODENINJAS.TocaAqui.API.Events.Domain.Services;
 using CODENINJAS.TocaAqui.API.Events.Application.Internal.CommandServices;
 using CODENINJAS.TocaAqui.API.Events.Application.Internal.QueryServices;
+using CODENINJAS.TocaAqui.API.IAM.Infrastructure.Hashing.BCrypt.Services;
+using CODENINJAS.TocaAqui.API.IAM.Infrastructure.Tokens.JWT.Services;
+using CODENINJAS.TocaAqui.API.IAM.Infrastructure.Tokens.JWT.Configuration;
+using CODENINJAS.TocaAqui.API.IAM.Infrastructure.Persistence.EFC.Repositories;
+using CODENINJAS.TocaAqui.API.IAM.Domain.Repositories;
+using CODENINJAS.TocaAqui.API.IAM.Domain.Services;
+using CODENINJAS.TocaAqui.API.IAM.Application.Internal.CommandServices;
+using CODENINJAS.TocaAqui.API.IAM.Application.Internal.QueryServices;
+using CODENINJAS.TocaAqui.API.IAM.Infrastructure.Pipeline.Middleware.Extensions;
+using CODENINJAS.TocaAqui.API.Shared.Interfaces.ASP.Configuration;
 using CODENINJAS.TocaAqui.API.IAM.Infrastructure.Hashing.BCrypt.Services;
 using CODENINJAS.TocaAqui.API.IAM.Infrastructure.Tokens.JWT.Services;
 using CODENINJAS.TocaAqui.API.IAM.Infrastructure.Tokens.JWT.Configuration;
@@ -36,6 +50,11 @@ builder.Services.AddControllers(opt =>
     // Convención kebab-case
     opt.Conventions.Add(new KebabCaseRouteNamingConvention());
 });
+builder.Services.AddControllers(opt =>
+{
+    // Convención kebab-case
+    opt.Conventions.Add(new KebabCaseRouteNamingConvention());
+});
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddControllers();
 
@@ -43,6 +62,7 @@ builder.Services.AddControllers();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
+           {
            {
         policy.AllowAnyOrigin()
               .AllowAnyMethod()
@@ -68,7 +88,17 @@ builder.Services.AddSwaggerGen(c =>
 // ------------- EF Core MySQL ----------------------
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                        ?? throw new Exception("Connection string is null");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                       ?? throw new Exception("Connection string is null");
 
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    options.UseMySQL(connectionString)
+           .LogTo(Console.WriteLine,
+                  builder.Environment.IsDevelopment() ? LogLevel.Information : LogLevel.Error)
+           .EnableDetailedErrors()
+           .EnableSensitiveDataLogging(builder.Environment.IsDevelopment());
+});
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseMySQL(connectionString)
@@ -103,6 +133,16 @@ builder.Services.AddScoped<IUserRepository,          UserRepository>();
 builder.Services.AddScoped<IUserCommandService,      UserCommandService>();
 builder.Services.AddScoped<IUserQueryService,        UserQueryService>();
 
+// ---------- IAM bindings --------------------------
+builder.Services.Configure<TokenSettings>(
+    builder.Configuration.GetSection("TokenSettings"));
+
+builder.Services.AddScoped<IHashingService, HashingService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUserRepository,          UserRepository>();
+builder.Services.AddScoped<IUserCommandService,      UserCommandService>();
+builder.Services.AddScoped<IUserQueryService,        UserQueryService>();
+
 // Payments
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IPaymentCommandService, PaymentCommandService>();
@@ -117,9 +157,18 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    context.Database.Migrate();   // aplica o crea la BD
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     // context.Database.EnsureCreated();   // Comentado: las tablas ya existen via migraciones
 }
 
+// ------------ Middleware pipeline ----------------
+app.UseSwagger();
+app.UseSwaggerUI(ui =>
+{
+    ui.SwaggerEndpoint("/swagger/v1/swagger.json", "CODENINJAS.TocaAqui.API v1");
+    ui.RoutePrefix = string.Empty;
+});
 // ------------ Configure the HTTP request pipeline ----------------
 //if (app.Environment.IsDevelopment())
 //{
@@ -134,6 +183,9 @@ using (var scope = app.Services.CreateScope())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
+
+// --- IAM auth middleware (valida tokens) ----------
+app.UseRequestAuthorization();
 
 // --- IAM auth middleware (valida tokens) ----------
 app.UseRequestAuthorization();

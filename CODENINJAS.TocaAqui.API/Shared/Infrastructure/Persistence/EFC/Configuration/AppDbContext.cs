@@ -5,6 +5,8 @@ using CODENINJAS.TocaAqui.API.IAM.Domain.Model.Aggregates;                // + I
 using CODENINJAS.TocaAqui.API.Payments.Domain.Model.Aggregates;           // + Payments
 using CODENINJAS.TocaAqui.API.Payments.Domain.Model.Entities;             // + Payments Entities
 using CODENINJAS.TocaAqui.API.Payments.Domain.Model.ValueObjects;         // + Payments Value Objects
+using CODENINJAS.TocaAqui.API.Profile.Domain.Model.Aggregates;
+using CODENINJAS.TocaAqui.API.IAM.Domain.Model.Aggregates;                // + IAM
 using CODENINJAS.TocaAqui.API.Shared.Infrastructure.Persistence.EFC.Configuration.Extensions;
 using EntityFrameworkCore.CreatedUpdatedDate.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -71,81 +73,5 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
         builder.Entity<Invitation>().Property(i => i.Id).IsRequired().ValueGeneratedOnAdd();
         builder.Entity<Invitation>().Property(i => i.Status).IsRequired().HasMaxLength(50);
         builder.Entity<Invitation>().Property(i => i.Message).HasMaxLength(1000);
-        
-        //Evaluations
-        builder.Entity<Evaluation>().HasKey(e => e.Id);
-        builder.Entity<Evaluation>().Property(e => e.Id).IsRequired().ValueGeneratedOnAdd();
-        builder.Entity<Evaluation>().Property(e => e.Type).IsRequired().HasMaxLength(20);
-        builder.Entity<Evaluation>().Property(e => e.Status).IsRequired().HasMaxLength(20);
-        builder.Entity<Evaluation>().Property(e => e.Comment).HasMaxLength(1000);
-        builder.Entity<Evaluation>().Property(e => e.Suggestions).HasMaxLength(1000);
-        builder.Entity<Evaluation>().Property(e => e.EventName).HasMaxLength(200);
-        builder.Entity<Evaluation>().Property(e => e.EventLocation).HasMaxLength(300);
-
-
-        // ---------- IAM – USER ---------------------------------------------
-        builder.Entity<User>().HasKey(u => u.Id);
-        builder.Entity<User>().Property(u => u.Id)          .IsRequired().ValueGeneratedOnAdd();
-        builder.Entity<User>().Property(u => u.Name)        .IsRequired().HasMaxLength(200);
-        builder.Entity<User>().Property(u => u.Email)       .IsRequired().HasMaxLength(320);
-        builder.Entity<User>().Property(u => u.PasswordHash).IsRequired();
-        builder.Entity<User>().Property(u => u.Role)        .IsRequired().HasMaxLength(50);
-        builder.Entity<User>().Property(u => u.Genre)       .HasMaxLength(100);
-        builder.Entity<User>().Property(u => u.Type)        .HasMaxLength(50);
-        builder.Entity<User>().Property(u => u.Description) .HasMaxLength(1000);
-        builder.Entity<User>().Property(u => u.ImageUrl)    .HasMaxLength(500);
-
-        // ---------- PAYMENTS CONFIGURATION ---------------------------------
-        // Payment Configuration
-        builder.Entity<Payment>().HasKey(p => p.Id);
-        builder.Entity<Payment>().Property(p => p.Id).IsRequired().ValueGeneratedOnAdd();
-        builder.Entity<Payment>().Property(p => p.EventId).IsRequired();
-        builder.Entity<Payment>().Property(p => p.MusicianId).IsRequired();
-        builder.Entity<Payment>().Property(p => p.PromoterId).IsRequired();
-        builder.Entity<Payment>().Property(p => p.Description).HasMaxLength(1000);
-        
-        // Payment Amount Configuration - Simplified
-        builder.Entity<Payment>().Property(p => p.Amount)
-            .HasConversion(
-                pa => pa.Value,
-                value => new PaymentAmount(value, "PEN")
-            )
-            .HasPrecision(10, 2)
-            .IsRequired()
-            .HasColumnName("amount");
-            
-        builder.Entity<Payment>().Property(p => p.Currency).HasMaxLength(10).HasDefaultValue("PEN");
-        
-        // Payment Method Configuration - Simplified
-        builder.Entity<Payment>().Property(p => p.PaymentMethod)
-            .HasConversion(
-                pm => pm.Method,
-                method => new PaymentMethod(method, null)
-            )
-            .HasMaxLength(50)
-            .IsRequired()
-            .HasColumnName("payment_method");
-            
-        // Bank Info as separate columns
-        builder.Entity<Payment>().Property(p => p.BankAccountNumber).HasMaxLength(50);
-        builder.Entity<Payment>().Property(p => p.BankName).HasMaxLength(100);
-        builder.Entity<Payment>().Property(p => p.BankAccountType).HasMaxLength(20);
-        
-        // Payment Status History Configuration
-        builder.Entity<PaymentStatusHistory>().HasKey(h => h.Id);
-        builder.Entity<PaymentStatusHistory>().Property(h => h.Id).IsRequired().ValueGeneratedOnAdd();
-        builder.Entity<PaymentStatusHistory>().Property(h => h.PaymentId).IsRequired();
-        builder.Entity<PaymentStatusHistory>().Property(h => h.Comment).HasMaxLength(500);
-        builder.Entity<PaymentStatusHistory>().HasOne<Payment>()
-            .WithMany(p => p.StatusHistory)
-            .HasForeignKey(h => h.PaymentId)
-            .IsRequired();
-
-        // ---------- snake_case (opcional) ----------------------------------
-        builder.UseSnakeCaseNamingConvention();
-        builder.Entity<Invitation>().HasOne<Event>()
-            .WithMany()
-            .HasForeignKey(i => i.EventId)
-            .IsRequired();
     }
 }
