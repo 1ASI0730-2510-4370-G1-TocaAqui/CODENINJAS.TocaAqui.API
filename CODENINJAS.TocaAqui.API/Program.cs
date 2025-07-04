@@ -117,7 +117,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    // context.Database.EnsureCreated();   // Comentado: las tablas ya existen via migraciones
+    context.Database.Migrate();   // Aplica migraciones y crea tablas automáticamente
 }
 
 // ------------ Configure the HTTP request pipeline ----------------
