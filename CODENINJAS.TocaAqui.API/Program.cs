@@ -25,6 +25,9 @@ using CODENINJAS.TocaAqui.API.Payments.Infrastructure.Persistence.EFC.Repositori
 using CODENINJAS.TocaAqui.API.Payments.Domain.Services;
 using CODENINJAS.TocaAqui.API.Payments.Application.Internal.CommandServices;
 using CODENINJAS.TocaAqui.API.Payments.Application.Internal.QueryServices;
+using CODENINJAS.TocaAqui.API.Evaluations.Application.Internal.CommandServices;
+using CODENINJAS.TocaAqui.API.Evaluations.Application.Internal.QueryServices;
+using CODENINJAS.TocaAqui.API.Evaluations.Infrastructure.Persistence.EFC.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -108,6 +111,11 @@ builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IPaymentCommandService, PaymentCommandService>();
 builder.Services.AddScoped<IPaymentQueryService, PaymentQueryService>();
 
+// Evaluations
+builder.Services.AddScoped<IEvaluationCommandService, EvaluationCommandService>();
+builder.Services.AddScoped<IEvaluationQueryService, EvaluationQueryService>();
+builder.Services.AddScoped<IEvaluationRepository, EvaluationRepository>();
+
 // --------------------------------------------------
 // 2. Construir app
 // --------------------------------------------------
@@ -117,7 +125,17 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    // context.Database.EnsureCreated();   // Comentado: las tablas ya existen via migraciones
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        logger.LogInformation("Intentando crear/verificar la base de datos...");
+        var created = context.Database.EnsureCreated();
+        logger.LogInformation($"Base de datos creada (o ya existente): {created}");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Error al crear la base de datos: {Message}", ex.Message);
+    }
 }
 
 // ------------ Configure the HTTP request pipeline ----------------

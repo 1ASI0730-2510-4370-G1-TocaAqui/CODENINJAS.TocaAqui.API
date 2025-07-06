@@ -26,7 +26,7 @@ public static class CreateInvitationCommandFromResourceAssembler
             resource.ArtistId,
             "Artist Name", // ArtistName - placeholder
             resource.Message,
-            "pending" // Status
+            "Pending" // Status - debe ser "Pending" con P mayúscula
         );
     }
 } 

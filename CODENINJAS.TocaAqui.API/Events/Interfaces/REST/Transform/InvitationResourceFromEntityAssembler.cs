@@ -18,8 +18,14 @@ public static class InvitationResourceFromEntityAssembler
         return new InvitationResource(
             entity.Id,
             entity.EventId,
+            entity.EventName,
+            entity.EventDate,
+            entity.EventLocation,
+            entity.EventImageUrl,
             entity.ArtistId,
+            entity.ArtistName,
             entity.PromoterId,
+            entity.PromoterName,
             entity.Status.ToString(),
             entity.CreatedAt,
             entity.Message

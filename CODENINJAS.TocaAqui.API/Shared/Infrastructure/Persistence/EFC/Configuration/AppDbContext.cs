@@ -4,9 +4,12 @@ using CODENINJAS.TocaAqui.API.IAM.Domain.Model.Aggregates;                // + I
 using CODENINJAS.TocaAqui.API.Payments.Domain.Model.Aggregates;           // + Payments
 using CODENINJAS.TocaAqui.API.Payments.Domain.Model.Entities;             // + Payments Entities
 using CODENINJAS.TocaAqui.API.Payments.Domain.Model.ValueObjects;         // + Payments Value Objects
+using CODENINJAS.TocaAqui.API.Evaluations.Domain.Model.Aggregates;
 using CODENINJAS.TocaAqui.API.Shared.Infrastructure.Persistence.EFC.Configuration.Extensions;
 using EntityFrameworkCore.CreatedUpdatedDate.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Text.Json;
 
 namespace CODENINJAS.TocaAqui.API.Shared.Infrastructure.Persistence.EFC.Configuration;
 
@@ -21,6 +24,12 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
         builder.AddCreatedUpdatedInterceptor();
         base.OnConfiguring(builder);
     }
+
+    public DbSet<Evaluation> Evaluations { get; set; }
+
+    // Métodos auxiliares para serializar y deserializar listas de string
+    private static string SerializeStringList(List<string> list) => JsonSerializer.Serialize(list);
+    private static List<string> DeserializeStringList(string json) => string.IsNullOrEmpty(json) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(json)!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -126,6 +135,42 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             .WithMany(p => p.StatusHistory)
             .HasForeignKey(h => h.PaymentId)
             .IsRequired();
+
+        // Evaluations Configuration
+        builder.Entity<Evaluation>().HasKey(e => e.Id);
+        builder.Entity<Evaluation>().Property(e => e.Id).IsRequired().ValueGeneratedOnAdd();
+        builder.Entity<Evaluation>().Property(e => e.EventId).IsRequired();
+        builder.Entity<Evaluation>().Property(e => e.MusicianId).IsRequired();
+        builder.Entity<Evaluation>().Property(e => e.PromoterId).IsRequired();
+        builder.Entity<Evaluation>().Property(e => e.Type).IsRequired();
+        builder.Entity<Evaluation>().Property(e => e.Status).IsRequired();
+        builder.Entity<Evaluation>().Property(e => e.Rating).IsRequired();
+        builder.Entity<Evaluation>().Property(e => e.Comment).HasMaxLength(1000);
+        builder.Entity<Evaluation>().Property(e => e.VenueRating).IsRequired();
+        builder.Entity<Evaluation>().Property(e => e.VenueComment).HasMaxLength(1000);
+        builder.Entity<Evaluation>().Property(e => e.ArtistRating).IsRequired();
+        builder.Entity<Evaluation>().Property(e => e.ArtistComment).HasMaxLength(1000);
+        builder.Entity<Evaluation>().Property(e => e.CreatedAt).IsRequired();
+        // Checklist y ArtistChecklist como JSON con ValueComparer y métodos auxiliares
+        var stringListComparer = new ValueComparer<List<string>>(
+            (c1, c2) => SerializeStringList(c1) == SerializeStringList(c2),
+            c => c == null ? 0 : SerializeStringList(c).GetHashCode(),
+            c => c == null ? new List<string>() : DeserializeStringList(SerializeStringList(c))
+        );
+        builder.Entity<Evaluation>().Property(e => e.Checklist)
+            .HasConversion(
+                v => SerializeStringList(v),
+                v => DeserializeStringList(v)
+            )
+            .HasColumnType("json")
+            .Metadata.SetValueComparer(stringListComparer);
+        builder.Entity<Evaluation>().Property(e => e.ArtistChecklist)
+            .HasConversion(
+                v => SerializeStringList(v),
+                v => DeserializeStringList(v)
+            )
+            .HasColumnType("json")
+            .Metadata.SetValueComparer(stringListComparer);
 
         // ---------- snake_case (opcional) ----------------------------------
         builder.UseSnakeCaseNamingConvention();

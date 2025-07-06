@@ -9,7 +9,7 @@ using CODENINJAS.TocaAqui.API.Events.Interfaces.REST.Transform;
 namespace CODENINJAS.TocaAqui.API.Events.Interfaces.REST;
 
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/event-applicants")]
 [Produces(MediaTypeNames.Application.Json)]
 [Tags("Event Applicants")]
 public class EventApplicantsController : ControllerBase

@@ -5,6 +5,8 @@ using CODENINJAS.TocaAqui.API.Events.Domain.Repositories;
 using CODENINJAS.TocaAqui.API.Events.Domain.Services;
 using CODENINJAS.TocaAqui.API.Events.Interfaces.REST.Resources;
 using CODENINJAS.TocaAqui.API.Events.Interfaces.REST.Transform;
+using CODENINJAS.TocaAqui.API.IAM.Domain.Repositories;
+using CODENINJAS.TocaAqui.API.Events.Domain.Model.Commands;
 
 namespace CODENINJAS.TocaAqui.API.Events.Interfaces.REST;
 
@@ -16,13 +18,19 @@ public class InvitationsController : ControllerBase
 {
     private readonly IInvitationCommandService _invitationCommandService;
     private readonly IInvitationRepository _invitationRepository;
+    private readonly IEventRepository _eventRepository;
+    private readonly IUserRepository _userRepository;
 
     public InvitationsController(
         IInvitationCommandService invitationCommandService,
-        IInvitationRepository invitationRepository)
+        IInvitationRepository invitationRepository,
+        IEventRepository eventRepository,
+        IUserRepository userRepository)
     {
         _invitationCommandService = invitationCommandService;
         _invitationRepository = invitationRepository;
+        _eventRepository = eventRepository;
+        _userRepository = userRepository;
     }
 
     /// <summary>
@@ -41,17 +49,65 @@ public class InvitationsController : ControllerBase
     {
         try
         {
-            var command = CreateInvitationCommandFromResourceAssembler.ToCommandFromResource(resource);
+            Console.WriteLine("=== NUEVO CONTROLADOR DE INVITACIONES ===");
+            Console.WriteLine($"EventId: {resource.EventId}");
+            Console.WriteLine($"ArtistId: {resource.ArtistId}");
+            Console.WriteLine($"PromoterId: {resource.PromoterId}");
+            
+            // Obtener datos reales del evento
+            var eventEntity = await _eventRepository.FindByIdAsync(resource.EventId);
+            if (eventEntity == null)
+                return BadRequest($"Event with ID {resource.EventId} not found");
+                
+            Console.WriteLine($"Event encontrado: {eventEntity.Name}");
+
+            // Obtener datos reales del promotor
+            var promoter = await _userRepository.FindByIdAsync(resource.PromoterId);
+            if (promoter == null)
+                return BadRequest($"Promoter with ID {resource.PromoterId} not found");
+                
+            Console.WriteLine($"Promoter encontrado: {promoter.Name}");
+
+            // Obtener datos reales del artista
+            var artist = await _userRepository.FindByIdAsync(resource.ArtistId);
+            if (artist == null)
+                return BadRequest($"Artist with ID {resource.ArtistId} not found");
+                
+            Console.WriteLine($"Artist encontrado: {artist.Name}");
+
+            // Crear el comando con datos reales
+            var command = new CreateInvitationCommand(
+                resource.EventId,
+                eventEntity.Name,
+                eventEntity.Date,
+                eventEntity.Location,
+                eventEntity.ImageUrl ?? "",
+                resource.PromoterId,
+                promoter.Name,
+                resource.ArtistId,
+                artist.Name,
+                resource.Message,
+                "Pending"
+            );
+            
+            Console.WriteLine($"Comando creado con EventName: {command.EventName}");
+            Console.WriteLine($"Comando creado con PromoterName: {command.PromoterName}");
+            Console.WriteLine($"Comando creado con ArtistName: {command.ArtistName}");
+
             var invitation = await _invitationCommandService.Handle(command);
             
             if (invitation is null) 
                 return BadRequest("Could not create invitation");
+                
+            Console.WriteLine($"Invitación creada con ID: {invitation.Id}");
             
             var invitationResource = InvitationResourceFromEntityAssembler.ToResourceFromEntity(invitation);
             return CreatedAtAction(nameof(GetInvitationById), new { id = invitation.Id }, invitationResource);
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"Error en CreateInvitation: {ex.Message}");
+            Console.WriteLine($"StackTrace: {ex.StackTrace}");
             return BadRequest($"Error creating invitation: {ex.Message}");
         }
     }
